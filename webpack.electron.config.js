@@ -18,9 +18,7 @@ module.exports = [
       path: path.resolve(__dirname, 'build/electron')
     },
     module: {
-      rules: [
-        { test: /\.tsx?$/, loader: 'ts-loader' }
-      ]
+      rules: require('./webpack.rules')
     },
     plugins: [
       gitRevisionPlugin,
@@ -50,9 +48,7 @@ module.exports = [
       path: path.resolve(__dirname, 'build/electron')
     },
     module: {
-      rules: [
-        { test: /\.tsx?$/, loader: 'ts-loader' }
-      ]
+      rules: require('./webpack.rules')
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js']

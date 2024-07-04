@@ -2,17 +2,12 @@ export enum StepKey {
   MnemonicImport,
   MnemonicGeneration,
   KeyConfiguration,
+  SlitKeyStore,
   KeyGeneration,
   Finish,
   BTECConfiguration,
   BTECGeneration,
   FinishBTEC
-}
-
-export enum StepSequenceKey {
-  MnemonicGeneration = "mnemonicgeneration",
-  MnemonicImport = "mnemonicimport",
-  BLSToExecutionChangeGeneration = "blstoexecutionchangegeneration",
 }
 
 export enum ReuseMnemonicAction {
@@ -22,6 +17,10 @@ export enum ReuseMnemonicAction {
 
 export enum Network {
   MAINNET = "Mainnet",
-  GOERLI = "Goerli",
   HOLESKY = "Holesky"
+}
+
+export enum LowerCaseNetwork {
+  MAINNET = "mainnet",
+  HOLESKY = "holesky"
 }

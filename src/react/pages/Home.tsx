@@ -1,13 +1,15 @@
 import { Button, Tooltip, Typography } from "@mui/material";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { paths, tooltips } from "../constants";
 import { GlobalContext } from "../GlobalContext";
-import { KeyIcon } from "../icons/KeyIcon";
-import NetworkPickerModal from "../modals/NetworkPickerModal";
-import ReuseMnemonicActionModal from "../modals/ReuseMnemonicActionModal";
+import { HomePageImage } from "../icons/HomePageImage";
 import { ReuseMnemonicAction } from "../types";
+
+import NetworkPickerModal from "../modals/NetworkPickerModal";
+import SyncOperatorModal from "../modals/SyncOperatorModal";
+import ReuseMnemonicActionModal from "../modals/ReuseMnemonicActionModal";
 
 /**
  * Landed page of the application.
@@ -15,49 +17,56 @@ import { ReuseMnemonicAction } from "../types";
  * they wish to make.
  */
 const Home = () => {
-  const { network } = useContext(GlobalContext);
+  const [showSyncOperatorModal, setSyncOperatorDialogOpen] = useState(false);
+  const [wasSyncOperatorModalOpened, setWasSyncOperatorModalOpened] = useState(false);
   const [wasNetworkModalOpened, setWasNetworkModalOpened] = useState(false);
   const [showNetworkModal, setShowNetworkModal] = useState(false);
   const [showReuseMnemonicModal, setShowReuseMnemonicModal] = useState(false);
-  const [createMnemonicSelected, setCreateMnemonicSelected] = useState(false);
-  const [useExistingMnemonicSelected, setUseExistingMnemonicSelected] = useState(false);
+  const { network } = useContext(GlobalContext);
 
   let history = useHistory();
 
   const tabIndex = useMemo(() => showNetworkModal ? -1 : 1, [showNetworkModal]);
 
+  // start process by open sync operator dialog 
+  const handleOpenSyncModal = () => {
+    setSyncOperatorDialogOpen(true);
+    setWasSyncOperatorModalOpened(true);
+  };
+
+  // choose network modal
   const handleOpenNetworkModal = () => {
+    if (wasNetworkModalOpened) return;
     setShowNetworkModal(true);
     setWasNetworkModalOpened(true);
   };
 
   const handleCloseNetworkModal = () => {
     setShowNetworkModal(false);
-    if (createMnemonicSelected) {
-      handleCreateNewMnemonic();
-    } else if (useExistingMnemonicSelected) {
-      handleUseExistingMnemonic();
-    }
+    handleOpenSyncModal();
   };
 
-  const handleCreateNewMnemonic = () => {
-    setCreateMnemonicSelected(true);
+  const handleCloseSyncOperatorDialog = () => {
+    setSyncOperatorDialogOpen(false);
+  }
 
-    if (!wasNetworkModalOpened) {
-      handleOpenNetworkModal();
-    } else {
-      history.push(paths.CREATE_MNEMONIC)
-    }
+  const handleSyncSkip = () => {
+    setSyncOperatorDialogOpen(false);
+    setWasSyncOperatorModalOpened(true);
+  }
+
+  const handleResetSyncDialog = () => {
+    setSyncOperatorDialogOpen(false);
+    setWasSyncOperatorModalOpened(false);
+    setWasNetworkModalOpened(false);
+  }
+
+  const handleCreateNewMnemonic = () => {
+    history.push(paths.CREATE_MNEMONIC);
   };
 
   const handleUseExistingMnemonic = () => {
-    setUseExistingMnemonicSelected(true);
-
-    if (!wasNetworkModalOpened) {
-      handleOpenNetworkModal();
-    } else {
-      setShowReuseMnemonicModal(true);
-    }
+    setShowReuseMnemonicModal(true);
   };
 
   const handleCloseReuseActionModal = () => {
@@ -79,65 +88,73 @@ const Home = () => {
     <div className="tw-flex tw-flex-col tw-pt-8">
       <div className="tw-pr-8 tw-text-right tw-w-full">
         <span className="tw-text-gray tw-text-sm">Select Network:</span>{" "}
-        <Button
-          color="primary"
-          onClick={handleOpenNetworkModal}
-          tabIndex={tabIndex}
-        >
+
+        <Button color="primary" onClick={handleOpenNetworkModal} tabIndex={tabIndex}>
           {network}
         </Button>
       </div>
 
       <div className="tw-flex tw-flex-col tw-items-center tw-mt-4">
-        <Typography className="tw-text-4xl tw-mb-5" variant="h1">Welcome!</Typography>
-
-        <KeyIcon />
-
-        <Typography className="tw-mt-2">Your key generator for staking on Ethereum.</Typography>
-        <Typography>
-          You should run this tool{" "}
-          <Tooltip title={tooltips.OFFLINE}>
-            <span className="tw-underline">offline</span>
-          </Tooltip>{" "}
-          for your own security.
-        </Typography>
-
-        <div className="tw-mt-5">
-          <div>
-            <span className="tw-text-gray">Github:</span>{" "}
-            <span className="tw-text-sm">https://github.com/stake-house/wagyu-key-gen</span>
-          </div>
-          <div>
-            <span className="tw-text-gray">Support:</span>{" "}
-            <span className="tw-text-sm">https://dsc.gg/ethstaker</span>
-          </div>
+        <div className="tw-w-full tw-max-w-md">
+          <HomePageImage />
         </div>
 
-        <Button
-          variant="contained"
-          color="primary"
-          className="tw-mt-5"
-          onClick={handleCreateNewMnemonic}
-          tabIndex={tabIndex}
-        >
-          Create New Secret Recovery Phrase
-        </Button>
+        <Typography variant="h6" className="tw-mt-12">Your key generator for staking on Ethereum</Typography>
+        <Typography className="tw-w-1/3 tw-text-center tw-mt-2">
+          <Tooltip title={tooltips.SYNC_AND_OFFLINE}>
+            <span>Distribute your validation duties among a set of distributed nodes to improve your validator resilience, safety, liveliness, and diversity.</span>
+          </Tooltip>
+        </Typography>
 
-        <Tooltip title={tooltips.IMPORT_MNEMONIC}>
+        {!wasSyncOperatorModalOpened && (
           <Button
-            className="tw-text-gray tw-mt-2"
-            size="small"
-            onClick={handleUseExistingMnemonic}
+            variant="contained"
+            color="primary"
+            className="tw-mt-10"
+            onClick={handleOpenNetworkModal}
             tabIndex={tabIndex}
           >
-            Use Existing Secret Recovery Phrase
+            Start the process
           </Button>
-        </Tooltip>
+        )}
+
+        {wasSyncOperatorModalOpened && (
+          <>
+            <Button
+              variant="contained"
+              color="primary"
+              className="tw-mt-10"
+              onClick={handleCreateNewMnemonic}
+              tabIndex={tabIndex}
+            >
+              Create new secret recovery phrase
+            </Button>
+
+            <Tooltip title={tooltips.IMPORT_MNEMONIC}>
+              <Button
+                className="tw-text-gray tw-mt-2"
+                size="small"
+                onClick={handleUseExistingMnemonic}
+                tabIndex={tabIndex}
+              >
+                Use Existing Secret Recovery Phrase
+              </Button>
+            </Tooltip>
+          </>
+        )}
       </div>
 
       <NetworkPickerModal
         onClose={handleCloseNetworkModal}
         showModal={showNetworkModal}
+      />
+
+      <SyncOperatorModal
+        onSkip={handleSyncSkip}
+        onClose={handleCloseSyncOperatorDialog}
+        onCancel={handleResetSyncDialog}
+        onError={handleResetSyncDialog}
+        showModal={showSyncOperatorModal}
       />
 
       <ReuseMnemonicActionModal

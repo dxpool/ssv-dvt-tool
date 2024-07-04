@@ -39,9 +39,13 @@ module.exports = {
         test: /node_modules\/JSONStream\/index\.js$/,
         loader: 'shebang-loader'
       }, {
-        test: /\.(woff|woff2|eot|ttf|svg)$/,
+        test: /\.(woff|woff2|eot|ttf)$/,
         loader: 'file-loader',
         options: { name: '[name].[ext]', outputPath: 'fonts/', }
+      }, {
+        test: /\.(jpg|png|svg)$/,
+        loader: 'file-loader',
+        options: { name: '[name].[ext]', outputPath: 'images/', }
       }
     ],
   },
@@ -49,6 +53,9 @@ module.exports = {
     // specify certain file extensions to get automatically appended to imports
     // ie we can write `import 'index'` instead of `import 'index.ts'`
     extensions: ['.ts', '.tsx', '.js', '.css'],
+    fallback: {
+      crypto: require.resolve('crypto-browserify'),
+    }
   },
   plugins: [
     new HtmlWebpackPlugin({

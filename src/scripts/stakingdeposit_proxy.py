@@ -267,6 +267,82 @@ def generate_keys(args):
         if not all([validate_deposit(deposit, credential) for deposit, credential in zip(deposit_json, credentials.credentials)]):
             raise ValidationError("Failed to verify the deposit data JSON files.")
 
+def generate_keyshare_with_keystore(args):
+    """
+    Generates keystore,keyshare and depositData files for Ethereum validators based on provided arguments.
+
+    Parameters:
+    args (Namespace): Argument namespace with the following attributes:
+        - eth1_withdrawal_address (str, optional): The Ethereum 1.0 withdrawal address.
+        - mnemonic (str): The mnemonic phrase used for key generation.
+        - wordlist (str): The wordlist to validate the mnemonic against.
+        - count (int): Number of keys to generate.
+        - folder (str): Directory where keystore files and deposit data will be saved.
+        - network (str): The Ethereum network (mainnet, holesky, etc.).
+        - index (int): index of the first validator's keys you wish to generate
+        - password (str): Password to secure the keystore files.
+
+    Returns:
+    None
+    """
+
+    eth1_withdrawal_address = None
+    if args.eth1_withdrawal_address:
+        eth1_withdrawal_address = args.eth1_withdrawal_address
+        if not is_hex_address(eth1_withdrawal_address):
+            raise ValueError("The given Eth1 address is not in hexadecimal encoded form.")
+
+        eth1_withdrawal_address = to_normalized_address(eth1_withdrawal_address)
+
+    mnemonic = validate_mnemonic(args.mnemonic, args.wordlist)
+    mnemonic_password = ''
+    amounts = [MAX_DEPOSIT_AMOUNT] * args.count
+    folder = args.folder
+    chain_setting = get_chain_setting(args.network)
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+
+    start_index = args.index
+    num_keys=args.count
+    hex_eth1_withdrawal_address=eth1_withdrawal_address
+    password=args.password
+
+    if len(amounts) != num_keys:
+        raise ValueError(
+            f"The number of keys ({num_keys}) doesn't equal to the corresponding deposit amounts ({len(amounts)})."
+        )
+    key_indices = range(start_index, start_index + num_keys)
+    credentials = CredentialList(
+        [Credential(mnemonic=mnemonic, mnemonic_password=mnemonic_password,
+            index=index, amount=amounts[index - start_index], chain_setting=chain_setting,
+            hex_eth1_withdrawal_address=hex_eth1_withdrawal_address)
+        for index in key_indices])
+    keystore_filefolders = [credential.save_signing_keystore(password=password, folder=folder) for credential in credentials.credentials]
+    deposit_data = [cred.deposit_datum_dict for cred in credentials.credentials]
+    filefolder = os.path.join(folder, 'deposit_data-%i.json' % time.time())
+    with open(filefolder, 'w') as f:
+        json.dump(deposit_data, f, default=lambda x: x.hex())
+    if os.name == 'posix':
+        os.chmod(filefolder, int('440', 8))  # Read for owner & group
+    deposits_file = filefolder
+
+    items = zip(credentials.credentials, keystore_filefolders)
+
+    if not all(credential.verify_keystore(keystore_filefolder=filefolder, password=password)
+        for credential, filefolder in items):
+        raise ValidationError("Failed to verify the keystores.")
+
+    with open(deposits_file, 'r') as f:
+        deposit_json = json.load(f)
+        if not all([validate_deposit(deposit, credential) for deposit, credential in zip(deposit_json, credentials.credentials)]):
+            raise ValidationError("Failed to verify the deposit data JSON files.")
+    
+    # Get keystore contents and print them as JSON strings
+    keystore_content = [credential.get_keystore_contents(password=password, folder=folder).as_json() for credential in credentials.credentials]
+    json_strings = [json.dumps(item) for item in keystore_content]
+    print(json.dumps(json_strings))  # Print the keystore contents as JSON strings
+    
+
 def decode_bytes(value):
     if value.startswith('0x'):
         value = value[2:]
@@ -311,6 +387,11 @@ def parse_generate_keys(args):
     """
     generate_keys(args)
 
+def parse_generate_keyshare_with_keystore(args):
+    """Parse CLI arguments to call the generate_keyshare_with_keystore function.
+    """
+    generate_keyshare_with_keystore(args)
+
 def parse_validate_mnemonic(args):
     """Parse CLI arguments to call the validate_mnemonic function.
     """
@@ -338,6 +419,17 @@ def main():
     generate_parser.add_argument("password", help="Password for the keystore files", type=str)
     generate_parser.add_argument("--eth1_withdrawal_address", help="Optional eth1 withdrawal address", type=str)
     generate_parser.set_defaults(func=parse_generate_keys)
+
+    generate_parser = subparsers.add_parser("generate_keyshare_with_keystore")
+    generate_parser.add_argument("wordlist", help="Path to word list directory", type=str)
+    generate_parser.add_argument("mnemonic", help="Mnemonic", type=str)
+    generate_parser.add_argument("index", help="Validator start index", type=int)
+    generate_parser.add_argument("count", help="Validator count", type=int)
+    generate_parser.add_argument("folder", help="Where to put the deposit data and keystore files", type=str)
+    generate_parser.add_argument("network", help="For which network to create these keys for", type=str)
+    generate_parser.add_argument("password", help="Password for the keystore files", type=str)
+    generate_parser.add_argument("--eth1_withdrawal_address", help="Optional eth1 withdrawal address", type=str)
+    generate_parser.set_defaults(func=parse_generate_keyshare_with_keystore)
 
     validate_parser = subparsers.add_parser("validate_mnemonic")
     validate_parser.add_argument("wordlist", help="Path to word list directory", type=str)

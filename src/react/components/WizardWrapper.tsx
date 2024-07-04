@@ -4,6 +4,7 @@ import { Step, StepLabel, Stepper, Typography } from "@mui/material";
 import { stepLabels } from "../constants";
 import { GlobalContext } from "../GlobalContext";
 import { StepKey } from "../types";
+import { OnlineDetector } from "../components/OnlineDetector";
 
 interface WizardWrapperParams {
   actionBarItems: ReactNode[];
@@ -32,16 +33,12 @@ const WizardWrapper = ({
   const { network } = useContext(GlobalContext);
 
   return (
-    <div className="tw-flex tw-flex-col tw-w-full tw-h-full">
-      <div className="tw-mt-2 tw-mb-8 tw-text-right">
-        <Typography variant="caption" className="tw-text-gray tw-mr-6">
-          Network: {network}
-        </Typography>
-      </div>
-
-      <div className="tw-px-28 tw-mb-8">
-        <Typography className="tw-text-center" variant="h1">
-          {title}
+    <div className="tw-flex tw-flex-col tw-w-full tw-h-full tw-px-8 tw-max-w-[1580px] tw-mx-auto">
+      <div className="tw-flex tw-items-center tw-mt-4 tw-mb-8">
+        <OnlineDetector />
+        <div className="tw-flex-grow"></div>
+        <Typography variant="caption" className="tw-text-gray tw-mr-6 tw-text-lg tw-h-[50px] tw-leading-[50px]">
+          Selected Network: {network}
         </Typography>
       </div>
 
@@ -52,7 +49,7 @@ const WizardWrapper = ({
       <Stepper
         activeStep={activeTimelineIndex}
         alternativeLabel
-        className="tw-bg-transparent tw-mb-14"
+        className="tw-bg-transparent tw-my-14"
       >
         {timelineItems.map((step: StepKey, index: number) => (
           <Step key={index}>
@@ -61,7 +58,7 @@ const WizardWrapper = ({
         ))}
       </Stepper>
 
-      <div className="tw-flex tw-flex-row tw-justify-around tw-mb-20 tw-h-[37px]">
+      <div className={`tw-flex tw-flex-row ${actionBarItems.length === 1 ? 'tw-justify-center' : 'tw-justify-between'} tw-px-20 tw-h-[37px]`}>
         {actionBarItems.map((item: ReactNode, index: number) => (
           <div className="tw-text-center tw-min-w-[150px]" key={index}>
             {item}

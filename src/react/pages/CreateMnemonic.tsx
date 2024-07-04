@@ -1,4 +1,4 @@
-import { FileCopy } from "@mui/icons-material";
+import { FileCopy, KeyboardArrowLeft } from "@mui/icons-material";
 import { Button, Grid, IconButton, TextField, Tooltip, Typography } from "@mui/material";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -142,16 +142,16 @@ const CreateMnemonic = () => {
   return (
     <WizardWrapper
       actionBarItems={[
-        <Button variant="contained" color="primary" disabled={showLoader} onClick={() => onBackClick()} tabIndex={3}>Back</Button>,
+        <Button variant="text" color="info" disabled={showLoader} onClick={() => onBackClick()} tabIndex={3} startIcon={<KeyboardArrowLeft />}>Back</Button>,
         <Button variant="contained" color="primary" disabled={showLoader} onClick={() => onNextClick()} tabIndex={2}>{nextText}</Button>,
       ]}
       activeTimelineIndex={0}
-      timelineItems={[StepKey.MnemonicGeneration, StepKey.KeyConfiguration, StepKey.KeyGeneration, StepKey.Finish]}
+      timelineItems={[StepKey.MnemonicGeneration, StepKey.KeyConfiguration, StepKey.SlitKeyStore, StepKey.KeyGeneration, StepKey.Finish]}
       title="Create Secret Recovery Phrase"
     >
       { confirmMnemonic ? (
-        <div className="tw-flex tw-flex-col tw-gap-4 tw-items-center">
-          <div>Please retype your Secret Recovery Phrase here to make sure you have it saved correctly.</div>
+        <div className="tw-flex tw-flex-col tw-gap-4 tw-px-8 tw-justify-center">
+          <div className="tw-mb-4 tw-text-lg">Please retype your Secret Recovery Phrase here to make sure you have it saved correctly.</div>
           <VerifyMnemonic
             hasError={mnemonicValidationError}
             mnemonicToVerify={mnemonicToVerify}
@@ -161,16 +161,16 @@ const CreateMnemonic = () => {
         </div>
       ) : mnemonic ? (
         <div className="tw-flex tw-flex-col tw-gap-4">
-          <div className="tw-text-center">
+          <div className="tw-px-8 tw-text-center">
             {verifyNext ?
-              <div className="tw-text-cyan">Make sure you back it up - without it you will not be able to retrieve your funds. You will be prompted for it next.</div> :
-              <div>Below is your Secret Recovery Phrase. Make sure you back it up - without it you will not be able to retrieve your funds.</div>
+              <div className="tw-text-cyan tw-mb-4 tw-text-lg">Make sure you back it up - without it you will not be able to retrieve your funds. You will be prompted for it next.</div> :
+              <div className="tw-mb-4 tw-text-lg">Below is your Secret Recovery Phrase. Make sure you back it up - without it you will not be able to retrieve your funds.</div>
             }
           </div>
 
-          <div className="tw-flex tw-flex-row tw-gap-4 tw-items-center tw-justify-center">
+          <div className="tw-flex tw-flex-row tw-gap-y-4 tw-items-center tw-justify-center tw-ml-8">
             {createMnemonicDisplay()}
-            <div className="tw-absolute tw-right-6">
+            <div className="tw-ml-4">
               <Tooltip title={copied ? "Copied" : "Copy"} open={copyTooltipOpen} onClose={handleCopyTooltipClose} onOpen={handleCopyTooltipOpen}>
                 <IconButton
                   aria-label="copy"
@@ -187,19 +187,19 @@ const CreateMnemonic = () => {
       ) : showLoader ? (
         <Loader message="Generating your secret recovery phrase. May take up to 30 seconds." />
       ) : (
-        <div className="tw-flex tw-flex-col tw-gap-4 tw-px-24 tw-mt-4">
-          <Typography className="tw-text-left" variant="body1">
+        <div className="tw-flex tw-flex-col tw-gap-4 tw-px-8 tw-mt-4">
+          <Typography className="tw-text-left tw-text-lg" variant="body1">
             In this step, we'll generate a Secret Recovery Phrase (traditionally referred to as a "mnemonic") and a set of validator keys for you. For more information, visit: https://kb.beaconcha.in/ethereum-2-keys
           </Typography>
-          <Typography className="tw-text-left" variant="body1">
+          <Typography className="tw-text-left tw-text-lg" variant="body1">
             It is{" "}
             <span className="tw-font-bold">very</span>{" "}
             important to{" "}
             <span className="tw-text-cyan">keep both your secret recovery phrase and your validator keys safe and secure</span>{" "}
             as you will need them to retrieve your funds later. Anybody with access to these will also be able to steal your funds! For tips on storage, see: https://www.ledger.com/blog/how-to-protect-your-seed-phrase
           </Typography>
-          <Typography className="tw-text-left" variant="body1">
-            We recommend running Wagyu Key Gen from an offline machine. One way to do this is to move the application to a USB stick, plug it in to an offline machine, and run it from there.
+          <Typography className="tw-text-left tw-text-lg" variant="body1">
+            We recommend running this DVT tool from an offline machine. One way to do this is to move the application to a USB stick, plug it in to an offline machine, and run it from there.
           </Typography>
           { generateErrorMessage && (
             <Typography

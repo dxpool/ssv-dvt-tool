@@ -1,4 +1,5 @@
 import { Button, Typography } from "@mui/material";
+import { KeyboardArrowLeft } from "@mui/icons-material";
 import { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -84,7 +85,7 @@ const CreateCredentialsChange = () => {
   return (
     <WizardWrapper
       actionBarItems={creatingCredentialsChange ? [] : [
-        <Button variant="contained" color="primary" onClick={() => onBackClick()} tabIndex={3}>Back</Button>,
+        <Button variant="text" color="info" onClick={() => onBackClick()} tabIndex={3} startIcon={<KeyboardArrowLeft />}>Back</Button>,
         <Button variant="contained" color="primary" disabled={!selectedFolder} onClick={() => onNextClick()} tabIndex={2}>Create</Button>,
       ]}
       activeTimelineIndex={2}
@@ -97,7 +98,7 @@ const CreateCredentialsChange = () => {
         <div className="tw-flex tw-flex-col tw-items-center tw-gap-4">
           <Typography>Choose a folder where we should save your BLS to execution change file.</Typography>
 
-          <FolderSelector onFolderSelect={onFolderSelect} />
+          <FolderSelector onFolderSelect={onFolderSelect} displayType="image" />
 
           {selectedFolder && <Typography>You've selected: {selectedFolder}</Typography>}
 

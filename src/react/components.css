@@ -1,0 +1,37 @@
+.MuiDataGrid-root .MuiDataGrid-columnHeaderCheckbox .MuiDataGrid-columnHeaderTitleContainer {
+  display: none;
+}
+
+.clusterClass {
+  padding: 1rem;
+  border: 1px solid #3C3D43;
+  border-radius: 12px;
+}
+
+.warning-card {
+  background-color: #FFF5D2;
+  font-size: 0.875rem;
+  padding: 1rem;
+  color: rgb(0 0 0);
+  border: 1px solid #ffd20a;
+  border-radius: 0.375rem;
+}
+
+.error-card {
+  background-color: #FBE7E7;
+  font-size: 0.875rem;
+  padding: 1rem;
+  color: rgb(0 0 0);
+  border: 1px solid #ec1c26;
+  border-radius: 0.375rem;
+}
+
+.mev-container {
+  background-color: #3F3F46;
+  color: #F9F9F9;
+}
+
+.no-mev-container {
+  background-color: #3F3F46;
+  color: #9999A2;
+}

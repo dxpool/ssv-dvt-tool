@@ -13,3 +13,7 @@ dist/
 build/
 src/scripts/__pycache__/
 stakingdeposit_proxy.spec
+
+# config file
+config.ts
+config

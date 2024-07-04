@@ -1,4 +1,5 @@
 import { Button, TextField } from "@mui/material";
+import { KeyboardArrowLeft } from "@mui/icons-material";
 import { useContext, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -84,14 +85,14 @@ const MnemonicImport = () => {
   return (
     <WizardWrapper
       actionBarItems={[
-        <Button variant="contained" color="primary" disabled={validatingMnemonic} onClick={() => onBackClick()} tabIndex={3}>Back</Button>,
+        <Button variant="text" color="info" disabled={validatingMnemonic} onClick={() => onBackClick()} tabIndex={3} startIcon={<KeyboardArrowLeft />}>Back</Button>,
         <Button variant="contained" color="primary" disabled={validatingMnemonic || !inputMnemonic} onClick={() => onNextClick()} tabIndex={2}>Import</Button>,
       ]}
       activeTimelineIndex={0}
       timelineItems={usingBTEC ? BTECFlow : ExistingMnemonicFlow}
       title="Import Secret Recovery Phrase"
     >
-      <div className="tw-px-20">
+      <div className="tw-px-8">
         { validatingMnemonic ? (
           <Loader message="Validating secret recovery phrase..." />
         ) : (
@@ -118,4 +119,3 @@ const MnemonicImport = () => {
 };
 
 export default MnemonicImport;
-

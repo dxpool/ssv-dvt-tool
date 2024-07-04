@@ -1,10 +1,12 @@
 import { Button, Link, Typography } from "@mui/material";
 import { useContext, useEffect } from "react";
 import { useHistory } from "react-router-dom";
+import { GlobalContext } from "../GlobalContext";
 
-import WizardWrapper from "../components/WizardWrapper";
 import { CreateMnemonicFlow, ExistingMnemonicFlow, paths } from "../constants";
 import { KeyCreationContext } from "../KeyCreationContext";
+import WizardWrapper from "../components/WizardWrapper";
+import config from "../../config";
 
 /**
  * Final step of creating validator keys. Will show the folder of where
@@ -14,6 +16,7 @@ const FinishKeyGeneration = () => {
   const { folderLocation } = useContext(KeyCreationContext);
   const history = useHistory();
   const usingExistingFlow = history.location.pathname === paths.FINISH_EXISTING;
+  const { network } = useContext(GlobalContext);
 
   useEffect(() => {
     if (!folderLocation) {
@@ -42,18 +45,19 @@ const FinishKeyGeneration = () => {
     });
   };
 
-  const onClose = () => {
-    window.electronAPI.ipcRendererSendClose();
+  const onOpenExplorer = () => {
+    const targetUrl = config.externalLink + '?network=' + network.toLowerCase();
+    window.electronAPI.openLink(targetUrl);
   };
 
   return (
     <WizardWrapper
-      actionBarItems={[<Button variant="contained" color="primary" onClick={() => onClose()} tabIndex={2}>Close</Button>]}
-      activeTimelineIndex={3}
+      actionBarItems={[<Button variant="contained" color="primary" onClick={() => onOpenExplorer()} tabIndex={2}>Go to Upload Page</Button>]}
+      activeTimelineIndex={4}
       timelineItems={usingExistingFlow ? ExistingMnemonicFlow : CreateMnemonicFlow}
       title="Create Keys"
     >
-      <div className="tw-flex tw-flex-col tw-gap-2 tw-mx-28">
+      <div className="tw-flex tw-flex-col tw-gap-2 tw-max-w-[1580px] tw-mx-4 tw-mb-12">
         <Typography variant="body1">
           Your keys have been created here:{" "}
           <Link
@@ -67,7 +71,7 @@ const FinishKeyGeneration = () => {
 
         <div>
           <Typography variant="body1">
-            There are two different files, here is a description of each:
+            There are three different files, here is a description of each:
           </Typography>
           <Typography className="tw-text-cyan">
             Keystore file(s) (ex. keystore-xxxxxxx.json)
@@ -80,6 +84,12 @@ const FinishKeyGeneration = () => {
           </Typography>
           <Typography variant="body2">
             This file represents public information about your validator.  It will be required to execute your deposit through the Ethereum Launchpad.  It can be recreated from your secret recovery phrase if necessary.
+          </Typography>
+          <Typography className="tw-text-cyan">
+            Keyshare file(s) (ex. keyshare-xxxxxx.json)
+          </Typography>
+          <Typography variant="body2">
+            This file contains the secret shares of your validator key.
           </Typography>
         </div>
 

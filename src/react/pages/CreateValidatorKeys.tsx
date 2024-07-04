@@ -1,13 +1,21 @@
 import { useContext, useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { Button, Typography } from "@mui/material";
+import { KeyboardArrowLeft } from "@mui/icons-material";
+import { CreateMnemonicFlow, ExistingMnemonicFlow, paths } from "../constants";
+import { GlobalContext } from "../GlobalContext";
+import { KeyCreationContext } from "../KeyCreationContext";
+import { NetworkTypeConfig } from "../../types.config";
 
 import FolderSelector from "../components/FolderSelector";
 import Loader from "../components/Loader";
 import WizardWrapper from "../components/WizardWrapper";
-import { CreateMnemonicFlow, ExistingMnemonicFlow, paths } from "../constants";
-import { GlobalContext } from "../GlobalContext";
-import { KeyCreationContext } from "../KeyCreationContext";
+import config from "../../config";
+
+type ErrorType = {
+  stderr?: string;
+  message?: string;
+};
 
 /**
  * Allows the user to select a destination folder for the validator keys.
@@ -22,12 +30,15 @@ const CreateValidatorKeys = () => {
     password,
     withdrawalAddress,
   } = useContext(KeyCreationContext);
-  const { network } = useContext(GlobalContext);
+  const { network, nonce, setNonce } = useContext(GlobalContext);
   const history = useHistory();
   const usingExistingFlow = history.location.pathname === paths.CREATE_KEYS_EXISTING;
+  const location = useLocation();
+  const operatorData = (location.state as any)?.data;
+  const networkKey = network.toLowerCase() as keyof NetworkTypeConfig;
 
   const [creatingKeys, setCreatingKeys] = useState(false);
-  const [generationError, setGenerationError] = useState("");
+  const [generationError, setGenerationError] = useState<string | undefined>("");
   const [selectedFolder, setSelectedFolder] = useState("");
 
   useEffect(() => {
@@ -40,35 +51,113 @@ const CreateValidatorKeys = () => {
     setSelectedFolder(folder);
   };
 
+  const handleError = (error: ErrorType) => {
+    const errorMsg = 'stderr' in error ? error.stderr : error.message;
+    setGenerationError(errorMsg);
+    setCreatingKeys(false);
+  };
+
   /**
    * Will attempt to generate the validator keys with the provided folder and if successful
    * will send the user to the final step of the flow
+   * 
    */
-  const createKeys = () => {
+  const createKeys = async () => {
     setCreatingKeys(true);
-
+  
     let appendedWithdrawalAddress = withdrawalAddress;
-
+  
     if (withdrawalAddress !== "" && !withdrawalAddress.toLowerCase().startsWith("0x")) {
       appendedWithdrawalAddress = "0x" + withdrawalAddress;
     }
-
-    window.eth2Deposit.generateKeys(
-      mnemonic,
-      index,
-      numberOfKeys,
-      network,
-      password,
-      appendedWithdrawalAddress,
-      selectedFolder,
-    ).then(() => {
-      setFolderLocation(selectedFolder);
-      history.replace(usingExistingFlow ? paths.FINISH_EXISTING : paths.FINISH_CREATE);
-    }).catch((error) => {
-      const errorMsg = ('stderr' in error) ? error.stderr : error.message;
-      setGenerationError(errorMsg);
+  
+    try {
+      const data = await window.eth2Deposit.generateKeysAndKeystore(
+        mnemonic,
+        index,
+        numberOfKeys,
+        network,
+        password,
+        appendedWithdrawalAddress,
+        selectedFolder
+      );
+  
+      const keystoreJsonArray = JSON.parse(data.stdout);
+  
+      try {
+        await processKeystoreFileJsonArray(keystoreJsonArray);
+      } catch (error: any) {
+        handleError(error);
+      }
+    } catch (error: any) {
+      handleError(error);
+    } finally {
       setCreatingKeys(false);
-    })
+    }
+  };
+
+  const processOperatorData = (operatorData: any) => {
+    const ids = [];
+    const publicKeys = [];
+
+    for (const key in operatorData) {
+      if (Object.hasOwnProperty.call(operatorData, key)) {
+        const item = operatorData[key];
+        if (item.id && item.public_key) {
+          ids.push(item.id);
+          publicKeys.push(item.public_key);
+        }
+      }
+    }
+    return { ids, publicKeys };
+  }
+
+  /**
+   * Asynchronously processes a single keystore file JSON string.
+   *
+   * @param {string} jsonString - A JSON string representing a keystore file.
+   * @param {number} currentNonce - The nonce to use for processing the keystore file.
+   * @returns {Promise<void>} - A promise that resolves when the keystore file has been processed.
+  */
+  const processKeystoreFileString = async (jsonString: string, currentNonce: number): Promise<void> => {
+    const jsonObject = JSON.parse(jsonString);
+    const { ids, publicKeys } = processOperatorData(operatorData);
+
+    const result = await window.ssvKeys.getUserKeys(jsonObject, password);
+    
+    const keyshare = await window.ssvKeys.splitKeystore(result.publicKey, result.privateKey, ids, publicKeys, config.network[networkKey].ownerAddress, currentNonce);
+    
+    setFolderLocation(selectedFolder);
+    return await window.ssvKeys.saveShareFile({
+      path: selectedFolder,
+      data: keyshare,
+    });
+  };
+  
+  /**
+   * Asynchronously processes an array of keystore file JSON strings.
+   *
+   * @param {string[]} keystoreFileArray - An array of JSON strings representing keystore files.
+   * @returns {Promise<void>} - A promise that resolves when all keystore files have been processed.
+  */
+  const processKeystoreFileJsonArray = async (keystoreFileArray: string[]): Promise<void> => {
+    let currentNonce = nonce;
+
+    await keystoreFileArray.reduce(async (promiseChain: Promise<void>, jsonString: string) => {
+      // Wait for the previous promise to resolve to ensure sequential execution
+      await promiseChain;
+      
+      // Process the current keystore file string with the current nonce
+      await processKeystoreFileString(jsonString, currentNonce);
+
+      currentNonce += 1;
+      setNonce(currentNonce);
+
+      // Return a resolved promise to continue the chain
+      return Promise.resolve();
+    }, Promise.resolve());// Initial value is a resolved promise to start the chain
+    
+    history.replace(usingExistingFlow ? paths.FINISH_EXISTING : paths.FINISH_CREATE);
   };
 
   const onBackClick = () => {
@@ -85,24 +174,35 @@ const CreateValidatorKeys = () => {
   return (
     <WizardWrapper
       actionBarItems={creatingKeys ? [] : [
-        <Button variant="contained" color="primary" onClick={() => onBackClick()} tabIndex={3}>Back</Button>,
-        <Button variant="contained" color="primary" disabled={!selectedFolder} onClick={() => onNextClick()} tabIndex={2}>Create</Button>,
+        <Button variant="text" color="info" onClick={() => onBackClick()} tabIndex={2} startIcon={<KeyboardArrowLeft />}>Back</Button>,
+        <Button variant="contained" color="primary" disabled={!selectedFolder} onClick={() => onNextClick()} tabIndex={3}>Save</Button>,
       ]}
-      activeTimelineIndex={2}
+      activeTimelineIndex={3}
       timelineItems={usingExistingFlow ? ExistingMnemonicFlow : CreateMnemonicFlow}
       title="Create Keys"
     >
-      { creatingKeys ? (
+      {creatingKeys ? (
         <Loader message="The duration of this process depends on how many keys you are generating and the performance of your computer.  Generating one key takes about 30 seconds.  Generating 100 keys may take about 10 minutes." />
       ) : (
-        <div className="tw-flex tw-flex-col tw-items-center tw-gap-4">
-          <Typography>Choose a folder where we should save your keys.</Typography>
+        <div className="tw-flex tw-flex-col tw-gap-4">
+          <Typography className="tw-text-lg tw-mb-8 tw-ml-14">Choose a folder where we should save your keys.</Typography>
 
-          <FolderSelector onFolderSelect={onFolderSelect} />
-
-          {selectedFolder && <Typography>You've selected: {selectedFolder}</Typography>}
-
-          {generationError && <Typography color="error">{generationError}</Typography>}
+          <FolderSelector onFolderSelect={onFolderSelect} displayType="image" />
+          
+          <div className="tw-text-center tw-mt-4">
+            {selectedFolder ? (
+              <Typography className="tw-text-lg">You've selected: {selectedFolder}</Typography>
+            ) : (
+              <div className="tw-text-lg tw-flex tw-justify-center">
+                <FolderSelector onFolderSelect={onFolderSelect} displayType="text" />
+              </div>
+            )}
+            {generationError && (
+              <div className="tw-text-center tw-mt-2">
+                <Typography color="error">{generationError}</Typography>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </WizardWrapper>
@@ -110,4 +210,3 @@ const CreateValidatorKeys = () => {
 };
 
 export default CreateValidatorKeys;
-

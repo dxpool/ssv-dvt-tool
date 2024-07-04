@@ -16,8 +16,8 @@ const OnlineWarningModal = ({ onClose, onHideWarning, open }: OnlineWarningModal
     className="tw-w-[600px]"
     open={open}
   >
-    <div className="tw-py-8 tw-px-4">
-      <div className="tw-text-3xl tw-text-center tw-mb-8">Internet Connection Detected</div>
+    <div className="tw-py-8 tw-px-8">
+      <div className="tw-text-2xl tw-font-semibold tw-text-center tw-mb-6">Internet Connection Detected</div>
       <div className="tw-text-left tw-min-h-[250px]">
         <Typography className="tw-mb-2" variant="body1">
           Being connected to the internet while using this tool drastically increases the risk of exposing your Secret Recovery Phrase.
@@ -30,18 +30,10 @@ const OnlineWarningModal = ({ onClose, onHideWarning, open }: OnlineWarningModal
           You can visit https://tails.net/install/ for instructions on how to download, install, and run Tails on a USB device.
         </Typography>
         <Typography variant="body1">
-          If you have any questions you can get help at https://dsc.gg/ethstaker
+          If you have any questions you can get help at https://stake.dxpool.com
         </Typography>
       </div>
-      <div>
-        <Button
-          className="tw-mr-2"
-          color="secondary"
-          onClick={() => onHideWarning()}
-          variant="contained"
-        >
-          Hide Warning
-        </Button>
+      <div className="tw-flex tw-items-center tw-justify-center">
         <Button
           color="primary"
           onClick={() => onClose()}
@@ -49,6 +41,7 @@ const OnlineWarningModal = ({ onClose, onHideWarning, open }: OnlineWarningModal
         >
           Close
         </Button>
+        <div className="tw-text-gray tw-ml-4 tw-cursor-pointer" onClick={() => onHideWarning()}>Hide Warning</div>
       </div>
     </div>
   </WagyuModal>

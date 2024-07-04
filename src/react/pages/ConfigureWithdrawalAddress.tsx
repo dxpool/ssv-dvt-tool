@@ -1,4 +1,5 @@
 import { Button, TextField, Tooltip, Typography } from "@mui/material";
+import { KeyboardArrowLeft } from "@mui/icons-material";
 import { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -175,7 +176,7 @@ const ConfigureWithdrawalAddress = () => {
   return (
     <WizardWrapper
       actionBarItems={[
-        <Button variant="contained" color="primary" disabled={validatingCredentials} onClick={() => onBackClick()} tabIndex={3}>Back</Button>,
+        <Button variant="text" color="info" disabled={validatingCredentials} onClick={() => onBackClick()} tabIndex={3} startIcon={<KeyboardArrowLeft />}>Back</Button>,
         <Button variant="contained" color="primary" disabled={validatingCredentials} onClick={() => onNextClick()} tabIndex={2}>Next</Button>,
       ]}
       activeTimelineIndex={1}

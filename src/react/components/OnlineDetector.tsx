@@ -1,7 +1,8 @@
 import { Button, Typography } from "@mui/material";
-import PermScanWifiIcon from "@mui/icons-material/PermScanWifi";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import React from "react";
 
+import URLChecker from "network-checker-tool";
 import OnlineWarningModal from "../modals/OnlineWarningModal";
 
 /**
@@ -14,19 +15,13 @@ export const OnlineDetector = () => {
   const [open, setOpen] = React.useState<boolean>(false);
   const [showWarning, setShowWarning] = React.useState<boolean>(false);
 
-  const updateOnlineStatus = () => {
-    if (navigator.onLine) {
-      setShowWarning(true);
-      window.removeEventListener("online", updateOnlineStatus);
-    }
-  };
-
   React.useEffect(() => {
-    window.addEventListener("online", updateOnlineStatus);
-    updateOnlineStatus();
+    const checker = new URLChecker((isOnline: boolean) => {
+      setShowWarning(isOnline);
+    });
 
     return () => {
-      window.removeEventListener("online", updateOnlineStatus);
+      checker.stopChecking();
     };
   }, []);
 
@@ -42,10 +37,10 @@ export const OnlineDetector = () => {
   return (
     <>
       {showWarning && (
-        <Button className="tw-w-[210px] tw-h-[50px] tw-fixed tw-top-6 tw-left-2 tw-cursor-pointer tw-text-orange" onClick={() => setOpen(true)}>
+        <Button className="tw-w-[210px] tw-h-[50px] tw-cursor-pointer tw-text-orange" onClick={() => setOpen(true)}>
           <div className="tw-absolute tw-w-0 tw-h-0 tw-left-6 tw-bg-[rgba(250, 30, 14, 0)] tw-animate-OnlinePulse tw-rounded-full" />
-          <PermScanWifiIcon className="tw-mr-1 tw-z-10"/>
-          <Typography variant="body1">Internet Detected</Typography>
+          <ErrorOutlineIcon className="tw-mr-1 tw-z-10 tw-text-[#00CDD0]"/>
+          <Typography variant="body1" className="tw-text-[#00CDD0]">Internet Detected</Typography>
         </Button>
       )}
 
@@ -55,5 +50,5 @@ export const OnlineDetector = () => {
         open={open}
       />
     </>
-  )
+  );
 };

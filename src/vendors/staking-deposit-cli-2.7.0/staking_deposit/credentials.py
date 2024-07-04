@@ -155,6 +155,10 @@ class Credential:
         filefolder = os.path.join(folder, 'keystore-%s-%i.json' % (keystore.path.replace('/', '_'), time.time()))
         keystore.save(filefolder)
         return filefolder
+    
+    def get_keystore_contents(self, password: str, folder: str) -> str:
+        keystore = self.signing_keystore(password)
+        return keystore
 
     def verify_keystore(self, keystore_filefolder: str, password: str) -> bool:
         saved_keystore = Keystore.from_file(keystore_filefolder)

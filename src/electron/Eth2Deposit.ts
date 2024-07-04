@@ -65,6 +65,7 @@ const BUNDLED_DIST_WORD_LIST_PATH = path.join(process.resourcesPath, "..",
 
 const CREATE_MNEMONIC_SUBCOMMAND = "create_mnemonic";
 const GENERATE_KEYS_SUBCOMMAND = "generate_keys";
+const GENERATE_KEYSHARE_SUBCOMMAND = "generate_keyshare_with_keystore";
 const VALIDATE_MNEMONIC_SUBCOMMAND = "validate_mnemonic";
 const VALIDATE_BLS_CREDENTIALS_SUBCOMMAND = "validate_bls_credentials";
 const VALIDATE_BLS_CHANGE_SUBCOMMAND = "bls_change";
@@ -143,6 +144,7 @@ const createMnemonic = async (language: string): Promise<string> => {
     executable = PYTHON_EXE;
     args = [STAKINGDEPOSIT_PROXY_PATH, CREATE_MNEMONIC_SUBCOMMAND, WORD_LIST_PATH, "--language",
       language];
+    
   }
 
   const { stdout, stderr } = await execFileProm(executable, args, {env: env});
@@ -219,6 +221,56 @@ const generateKeys = async (
   }
   
   await execFileProm(executable, args, {env: env});
+}
+
+const generateKeysAndKeystore = async (
+  mnemonic: string,
+  index: number,
+  count: number,
+  network: string,
+  password: string,
+  eth1_withdrawal_address: string,
+  folder: string,
+) : Promise<{stdout: string, stderr: string}> => {
+  let executable:string = "";
+  let args:string[] = [];
+  let env = process.env;
+  
+  if (await doesFileExist(BUNDLED_SFE_PATH)) {
+    executable = BUNDLED_SFE_PATH;
+    args = [GENERATE_KEYSHARE_SUBCOMMAND];
+    if ( eth1_withdrawal_address != "" ) {
+      args = args.concat(["--eth1_withdrawal_address", eth1_withdrawal_address]);
+    }
+    
+    args = args.concat([BUNDLED_DIST_WORD_LIST_PATH, mnemonic, index.toString(), count.toString(),
+      folder, network.toLowerCase(), password]);
+  } else if (await doesFileExist(SFE_PATH)) {
+    executable = SFE_PATH;
+    args = [GENERATE_KEYSHARE_SUBCOMMAND];
+    if ( eth1_withdrawal_address != "" ) {
+      args = args.concat(["--eth1_withdrawal_address", eth1_withdrawal_address]);
+    }
+    
+    args = args.concat([DIST_WORD_LIST_PATH, mnemonic, index.toString(), count.toString(), folder,
+      network.toLowerCase(), password]);
+  } else {
+    if(!(await requireDepositPackages())) {
+      throw new Error("Failed to generate keys, don't have the required packages.");
+    }
+    env.PYTHONPATH = await getPythonPath();
+
+    executable = PYTHON_EXE;
+    args = [STAKINGDEPOSIT_PROXY_PATH, GENERATE_KEYSHARE_SUBCOMMAND];
+    if ( eth1_withdrawal_address != "" ) {
+      args = args.concat(["--eth1_withdrawal_address", eth1_withdrawal_address]);
+    }
+
+    args = args.concat([WORD_LIST_PATH, mnemonic, index.toString(), count.toString(), folder,
+      network.toLowerCase(), password]);
+  }
+  
+  return await execFileProm(executable, args, {env: env});
 }
 
 /**
@@ -361,5 +413,6 @@ export {
   generateKeys,
   validateMnemonic,
   validateBLSCredentials,
-  generateBLSChange
+  generateBLSChange,
+  generateKeysAndKeystore
 };

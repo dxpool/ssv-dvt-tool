@@ -28,6 +28,8 @@ export interface IElectronAPI {
   invokeShowOpenDialog: (options: OpenDialogOptions) => Promise<OpenDialogReturnValue>
   ipcRendererSendClose: () => void,
   shellShowItemInFolder: (fullPath: string) => void,
+  openLink: (url: string) => void,
+  clearCache: () => void,
 }
 
 export interface IEth2DepositAPI {
@@ -35,6 +37,10 @@ export interface IEth2DepositAPI {
   generateBLSChange: (folder: string, chain: string, mnemonic: string, index: number, indices: string, withdrawal_credentials: string, execution_address: string) => Promise<void>,
   generateKeys: (mnemonic: string, index: number, count: number, network: string,
     password: string, eth1_withdrawal_address: string, folder: string) => Promise<void>,
+
+  generateKeysAndKeystore: (mnemonic: string, index: number, count: number, network: string,
+    password: string, eth1_withdrawal_address: string, folder: string) => Promise<{stdout: string, stderr: string}>,
+    
   validateBLSCredentials: (chain: string, mnemonic: string, index: number, withdrawal_credentials: string) => Promise<void>,
   validateMnemonic: (mnemonic: string) => Promise<void>,
 }
@@ -49,11 +55,19 @@ export interface IWeb3UtilsAPI {
   isAddress: (address: string, chainId?: number | undefined) => Promise<boolean>
 }
 
+export interface ISSVKeysAPI {
+  splitKeystore: (publicKey: string, privateKey: string, operatorIDs: number[], operatorKeys: string[], ownerAddress: string, nonce: number) => Promise<any>,
+  getUserKeys: (keystoreFile: string, password: string) => Promise<{privateKey: string, publicKey: string}>,
+  saveShareFile: (options: { path: string, data: any }) => Promise<void>,
+  getAddressNonce: (network: string, ownerAddress: string, nodeUrl: string) => Promise<number>, 
+}
+
 declare global {
   interface Window {
     electronAPI: IElectronAPI,
     eth2Deposit: IEth2DepositAPI,
     bashUtils: IBashUtilsAPI,
-    web3Utils: IWeb3UtilsAPI
+    web3Utils: IWeb3UtilsAPI,
+    ssvKeys: ISSVKeysAPI,
   }
 }

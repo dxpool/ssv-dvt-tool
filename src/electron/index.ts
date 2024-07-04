@@ -2,7 +2,6 @@
 /**
  * This typescript file contains the Electron app which renders the React app.
  */
-
 import {
   BrowserWindow,
   app,
@@ -10,24 +9,32 @@ import {
   dialog,
   ipcMain,
   shell,
+  globalShortcut,
+  session
 } from "electron";
+
 import { OpenDialogOptions } from "electron/common";
 import { accessSync, constants } from "fs";
 import path from "path";
-import { isAddress } from 'web3-utils';
+import { isAddress } from "web3-utils";
+import { splitKeystoreFile, getUserKeys, getAddressNonce, saveShareFile } from "./SSVUtils";
 
 import {
   doesDirectoryExist,
   findFirstFile,
   isDirectoryWritable,
-} from './BashUtils';
+} from "./BashUtils";
 import {
   createMnemonic,
   generateBLSChange,
   generateKeys,
+  generateKeysAndKeystore,
   validateBLSCredentials,
   validateMnemonic,
-} from './Eth2Deposit';
+} from "./Eth2Deposit";
+
+const crypto = require('crypto');
+global.crypto = crypto;
 
 /**
  * VERSION and COMMITHASH are set by the git-revision-webpack-plugin module.
@@ -45,8 +52,8 @@ const doesFileExist = (filename: string): boolean => {
 };
 
 app.on("ready", () => {
-  var iconPath = path.join("static", "icon.png");
-  const bundledIconPath = path.join(process.resourcesPath, "..", "static", "icon.png");
+  var iconPath = path.join("static", "icon.svg");
+  const bundledIconPath = path.join(process.resourcesPath, "..", "static", "icon.svg");
 
   if (doesFileExist(bundledIconPath)) {
     iconPath = bundledIconPath;
@@ -58,18 +65,19 @@ app.on("ready", () => {
    * Create the window in which to render the React app
    */
   const window = new BrowserWindow({
-    width: 950,
-    height: 750,
+    width: 1500,
+    height: 780,
     icon: iconPath,
     title: title,
-
+    backgroundColor: '#18181a',
+    frame: false,
     webPreferences: {
-      nodeIntegration: false,
+      nodeIntegration: true,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js')
     }
   });
-
+  
   /**
    * Hide the default menu bar that comes with the browser window
    */
@@ -81,6 +89,13 @@ app.on("ready", () => {
   window.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
     return callback(false);
   });
+
+  /**
+   * Register global shortcuts to disable refresh
+   */
+  globalShortcut.register('CommandOrControl+R', () => {});
+
+  globalShortcut.register('CommandOrControl+Shift+R', () => {});
 
   /**
    * This logic closes the application when the window is closed, explicitly.
@@ -111,6 +126,38 @@ app.on("ready", () => {
     return await dialog.showOpenDialog(options);
   });
 
+  ipcMain.on('window-minimize', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    window?.minimize();
+  });
+  
+  ipcMain.on('window-maximize', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (window?.isMaximized()) {
+      window.unmaximize();
+    } else {
+      window?.maximize();
+    }
+  });
+  
+  ipcMain.on('window-close', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    window?.close();
+  });
+
+
+  const clearAppCache = () => {
+    session.defaultSession.clearCache().then(() => {}).catch(() => {});
+  };
+
+  ipcMain.on('clear-cache', (event) => {
+    clearAppCache();
+  });
+
+  ipcMain.on('open-link', (event, arg) => {
+    shell.openExternal(arg);
+  });
+
   /**
    * Passthroughs for non-electron renderer calls
    */
@@ -119,6 +166,9 @@ app.on("ready", () => {
   });
   ipcMain.handle('generateBLSChange', async (event, ...args: Parameters<typeof generateBLSChange>) => {
     return await generateBLSChange(...args);
+  });
+  ipcMain.handle('generateKeysAndKeystore', async (event, ...args: Parameters<typeof generateKeys>) => {
+    return await generateKeysAndKeystore(...args);
   });
   ipcMain.handle('generateKeys', async (event, ...args: Parameters<typeof generateKeys>) => {
     return await generateKeys(...args);
@@ -139,7 +189,23 @@ app.on("ready", () => {
     return await findFirstFile(...args);
   });
   ipcMain.handle('isAddress', async (event, ...args: Parameters<typeof isAddress>) => {
-    return await isAddress(...args);
+    return isAddress(...args);
+  });
+
+  ipcMain.handle('getUserKeys', async (event, ...args: Parameters<typeof getUserKeys>) => {
+    return await getUserKeys(...args);
+  });
+
+  ipcMain.handle('splitKeystore', async (event, ...args: Parameters<typeof splitKeystoreFile>) => {
+    return await splitKeystoreFile(...args);
+  });
+
+  ipcMain.handle('saveShareFile', async (event, ...args: Parameters<typeof saveShareFile>) => {
+    return saveShareFile(...args);
+  });
+
+  ipcMain.handle('getAddressNonce', async (event, ...args: Parameters<typeof getAddressNonce>) => {
+    return await getAddressNonce(...args);
   });
 
   /**

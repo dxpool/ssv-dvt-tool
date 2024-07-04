@@ -1,11 +1,9 @@
 import {
   Button,
-  Divider,
   FormControl,
   FormControlLabel,
   Radio,
-  RadioGroup,
-  Typography,
+  RadioGroup
 } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 
@@ -49,29 +47,48 @@ const NetworkPickerModal = ({onClose, showModal}: NetworkPickerModalParams) => {
 
   return (
     <WagyuModal
-      className="tw-w-[350px] tw-h-[444px]"
+      className="tw-w-[420px] tw-h-[444px]"
       open={showModal}
     >
       <div>
-        <div className="tw-text-4xl tw-my-7">Network</div>
+        <div className="tw-text-2xl tw-mt-8 tw-mb-12">Confirm Your Network</div>
         <FormControl variant="standard" focused>
           <RadioGroup aria-label="gender" name="gender1" value={formNetwork} onChange={onNetworkChange}>
-            <FormControlLabel value={Network.MAINNET} control={<Radio />} label={Network.MAINNET} />
-            <Divider />
-            <Typography className="tw-text-xl tw-mt-5 tw-mb-4">Testnets</Typography>
-            <FormControlLabel value={Network.HOLESKY} control={<Radio />} label={Network.HOLESKY} />
-            <FormControlLabel value={Network.GOERLI} control={<Radio />} label={Network.GOERLI} />
+            <FormControlLabel value={Network.MAINNET} control={<Radio />} label={Network.MAINNET} sx={{
+              '& .MuiSvgIcon-root': {
+                fontSize: 28,
+              },
+              '& .MuiFormControlLabel-label': {
+                fontSize: '1.125rem',
+                textAlign: 'center',
+                flex: 1,
+              },
+              display: 'flex',
+              justifyContent: 'center',
+            }}  />
+            <FormControlLabel value={Network.HOLESKY} control={<Radio />} label={Network.HOLESKY + ' (Testnet)'}sx={{
+              '& .MuiSvgIcon-root': {
+                fontSize: 28,
+              },
+              '& .MuiFormControlLabel-label': {
+                fontSize: '1.125rem',
+                textAlign: 'center',
+                marginLeft: '1rem',
+                flex: 1,
+              },
+              display: 'flex',
+              justifyContent: 'center',
+              marginBottom: '1rem',
+              marginTop: '3rem',
+            }}  />
           </RadioGroup>
 
-          <Button
-            className="tw-mt-9"
-            color="primary"
-            onClick={onSubmit}
-            variant="contained"
-            tabIndex={1}
-          >
-            OK
-          </Button>
+          <div className="tw-flex tw-justify-center tw-mt-12">
+            <Button className="tw-w-[120px] tw-h-10 tw-rounded-md" color="primary" onClick={onSubmit} variant="contained" tabIndex={1}>
+              Confirm
+            </Button>
+          </div>
+          
         </FormControl>
       </div>
     </WagyuModal>
