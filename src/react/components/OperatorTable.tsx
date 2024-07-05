@@ -146,6 +146,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
   useEffect(() => {
     // when selectedClusterSize/selectedOperators changes, update the selectionModel
     const filteredOperatorIds = Object.keys(selectedOperators).map(key => parseInt(key));
+
     setSelectionModel(filteredOperatorIds);
   }, [selectedClusterSize, selectedOperators]);
 
@@ -189,7 +190,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
   // Utility function to get default selected rows
   const getDefaultSelectedRows = () => {
     const defaultOperator = operatorList
-      .filter((operator: any) => operator.name.includes('DxPool'))
+      .filter((operator: any) => operator.name.includes('DxPool') && operator.is_active === 1)
       .reduce((minOperator: any, currentOperator: any) => {
         return currentOperator.validators_count < minOperator.validators_count ? currentOperator : minOperator;
       }, { validators_count: Infinity });
@@ -250,7 +251,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
 
     // Check if default selected rows are unselected
     if (isDefaultRowUnselected(selection, defaultSelectedRows)) return;
-  
+
     // Check if the selection exceeds the allowed cluster size
     if (selection.length > selectedClusterSize) return;
   
@@ -263,7 +264,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
     const maximumValidators = getOperatorsWithMaximumValidators();
     // Check if the selection contains operators with maximum validators count
     if (hasMaximumValidator(selection, maximumValidators)) return;
-  
+
     // Update the selection model
     setSelectionModel(selection);
   

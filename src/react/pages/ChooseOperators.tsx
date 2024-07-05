@@ -34,7 +34,7 @@ const ChooseOperators = () => {
   const networkKey = network.toLowerCase() as keyof NetworkTypeConfig;
 
   const defaultOperator = operatorList
-  .filter((operator: any) => operator.name.includes('DxPool'))
+  .filter((operator: any) => operator.name.includes('DxPool') && operator.is_active === 1)
   .reduce((minOperator: any, currentOperator: any) => {
     return currentOperator.validators_count < minOperator.validators_count ? currentOperator : minOperator;
   }, operatorList[0]);
