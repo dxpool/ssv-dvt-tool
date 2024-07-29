@@ -1,7 +1,25 @@
-import config from '../../config';
 import { INTERVAL_TIME } from '../constants';
-import { OperatorRequestParams } from '../modals/SyncOperatorModal';
 import { preloadAndCacheImages } from '../utils/imageCache';
+import { getOperatorList, getAddressNonce } from "../../api"
+
+/**
+ * get address nonce using api
+ * 
+ * @param ownerAddress
+ * @param network 
+ * 
+ * @returns nonce
+ *          
+ */
+export const getNonce = async (network: string, ownerAddress: string): Promise<number> => {
+  const params = {
+    network_type: network,
+    address: ownerAddress,
+  }
+  const res = await getAddressNonce(params);
+
+  return res.data.nonce;
+};
 
 export function sortOperatorFunction(a: any, b: any) {
   if (a.name.includes('DxPool') !== b.name.includes('DxPool')) {
@@ -10,34 +28,20 @@ export function sortOperatorFunction(a: any, b: any) {
   return 0;
 }
 
-export function buildUrl(params: OperatorRequestParams): string {
-  const { network } = params;
-  let url = `${config.baseUrl}?network_type=${network.toLowerCase()}`;
-
-  const queryParams = new URLSearchParams();
-
-  url += queryParams.toString();
-  return url;
-}
-
 /**
  * Handles the operator request by fetching data from the provided URL,
  * updating the progress, and retrieving the next nonce for the given address.
  *
- * @param {string} url - The URL to fetch data from.
  * @param {(progress: number) => void} setProgress - The function to update the progress.
  * @param {string} network - The network to retrieve the nonce from.
  * @param {string} ownerAddress - The owner address to get the nonce for.
- * @param {string} nodeUrl - The node URL to connect to.
  * @returns {Promise<{ data: any; nextNonce: number }>} - A promise that resolves with the fetched data and the next nonce.
  * @throws Will throw an error if the fetch request fails.
  */
 export const handleOperatorRequest = async (
-  url: string,
   setProgress: (progress: number) => void,
   network: string,
   ownerAddress: string,
-  nodeUrl: string
 ): Promise<{ data: any; nextNonce: number }> => {
   let progress = 0;
 
@@ -51,10 +55,13 @@ export const handleOperatorRequest = async (
   const intervalId = setInterval(updateProgress, INTERVAL_TIME);
 
   try {
-    const response = await fetch(url);
-    const data = (await response.json()).items;
+    const params = {
+      network_type: network.toLowerCase()
+    }
+    const response = await getOperatorList(params);
+    const data = response.data.items;
 
-    const nextNonce = await window.ssvKeys.getAddressNonce(network, ownerAddress, nodeUrl);
+    const nextNonce = await getNonce(network.toLowerCase(), ownerAddress);
 
     await preloadAndCacheImages(data, network);
 

@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { Button, Typography, Box, CircularProgress } from "@mui/material";
 import { GlobalContext } from "../GlobalContext";
-import { buildUrl, handleOperatorRequest } from "../utils";
+import { handleOperatorRequest } from "../utils";
 import { clearImageCache } from '../utils/imageCache';
 
 import config from "../../config";
@@ -98,18 +98,10 @@ const SyncOperatorModal = ({onClose, onSkip, onError, onCancel, showModal}: Sync
       window.electronAPI.clearCache();
       clearImageCache();
 
-      // start sync operator by calling ssv official api
-      const params: OperatorRequestParams = {
-        network: network,
-      };
-
-      const url = buildUrl(params);
       const { data, nextNonce } = await handleOperatorRequest(
-        url,
         setProgress,
         network,
         config.network[networkKey].ownerAddress,
-        config.network[networkKey].nodeUrl
       );
 
       setOperatorList(data);

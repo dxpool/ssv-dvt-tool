@@ -59,7 +59,6 @@ export interface ISSVKeysAPI {
   splitKeystore: (publicKey: string, privateKey: string, operatorIDs: number[], operatorKeys: string[], ownerAddress: string, nonce: number) => Promise<any>,
   getUserKeys: (keystoreFile: string, password: string) => Promise<{privateKey: string, publicKey: string}>,
   saveShareFile: (options: { path: string, data: any }) => Promise<void>,
-  getAddressNonce: (network: string, ownerAddress: string, nodeUrl: string) => Promise<number>, 
 }
 
 declare global {

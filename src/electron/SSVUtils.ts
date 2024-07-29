@@ -1,5 +1,4 @@
 import { SSVKeys, KeyShares, KeySharesItem } from "ssv-keys";
-import { NonceScanner } from "ssv-scanner";
 import fs from "fs";
 import path from "path";
 
@@ -63,29 +62,6 @@ const getUserKeys = async (keystoreData: string, password: string) => {
   return { privateKey, publicKey }
 }
 
-/**
- * get address nonce using ssv scanner
- * 
- * @param ownerAddress
- * @param network 
- * @param nodeUrl 
- * 
- * @returns nonce
- *          
- */
-const getAddressNonce = async (network: string, ownerAddress: string, nodeUrl: string): Promise<number> => {
-  const params = {
-    network: network,
-    nodeUrl: nodeUrl,
-    ownerAddress: ownerAddress,
-  }
-
-  const nonceScanner = new NonceScanner(params);
-  const nextNonce = await nonceScanner.run();
-
-  return nextNonce;
-};
-
 interface SaveShareFileOptions {
   path: string;
   data: any;
@@ -113,6 +89,5 @@ const saveShareFile = (options: SaveShareFileOptions) => {
 export {
   splitKeystoreFile,
   getUserKeys,
-  getAddressNonce,
   saveShareFile
 }

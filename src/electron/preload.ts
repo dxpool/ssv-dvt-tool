@@ -54,5 +54,4 @@ contextBridge.exposeInMainWorld('ssvKeys', {
   'splitKeystore': (...args: Parameters<ISSVKeysAPI['splitKeystore']>) => ipcRenderer.invoke('splitKeystore', ...args),
   'getUserKeys': (...args: Parameters<ISSVKeysAPI['getUserKeys']>) => ipcRenderer.invoke('getUserKeys', ...args),
   'saveShareFile': (...args: Parameters<ISSVKeysAPI['saveShareFile']>) => ipcRenderer.invoke('saveShareFile', ...args),
-  'getAddressNonce': (...args: Parameters<ISSVKeysAPI['getAddressNonce']>) => ipcRenderer.invoke('getAddressNonce', ...args),
 });

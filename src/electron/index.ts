@@ -17,7 +17,7 @@ import { OpenDialogOptions } from "electron/common";
 import { accessSync, constants } from "fs";
 import path from "path";
 import { isAddress } from "web3-utils";
-import { splitKeystoreFile, getUserKeys, getAddressNonce, saveShareFile } from "./SSVUtils";
+import { splitKeystoreFile, getUserKeys, saveShareFile } from "./SSVUtils";
 
 import {
   doesDirectoryExist,
@@ -202,10 +202,6 @@ app.on("ready", () => {
 
   ipcMain.handle('saveShareFile', async (event, ...args: Parameters<typeof saveShareFile>) => {
     return saveShareFile(...args);
-  });
-
-  ipcMain.handle('getAddressNonce', async (event, ...args: Parameters<typeof getAddressNonce>) => {
-    return await getAddressNonce(...args);
   });
 
   /**
