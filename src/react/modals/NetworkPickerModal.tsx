@@ -21,7 +21,7 @@ interface NetworkPickerModalParams {
  */
 const NetworkPickerModal = ({onClose, showModal}: NetworkPickerModalParams) => {
   const { network, setNetwork } = useContext(GlobalContext);
-  const [formNetwork, setFormNetwork] = useState<Network>(Network.MAINNET);
+  const [formNetwork, setFormNetwork] = useState<Network>(Network.HOLESKY);
 
   useEffect(() => {
     if (network) {
@@ -54,7 +54,7 @@ const NetworkPickerModal = ({onClose, showModal}: NetworkPickerModalParams) => {
         <div className="tw-text-2xl tw-mt-8 tw-mb-12">Confirm Your Network</div>
         <FormControl variant="standard" focused>
           <RadioGroup aria-label="gender" name="gender1" value={formNetwork} onChange={onNetworkChange}>
-            <FormControlLabel value={Network.MAINNET} control={<Radio />} label={Network.MAINNET} sx={{
+            <FormControlLabel value={Network.MAINNET} control={<Radio />} label={Network.MAINNET} disabled sx={{
               '& .MuiSvgIcon-root': {
                 fontSize: 28,
               },
