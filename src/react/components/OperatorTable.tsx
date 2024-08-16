@@ -62,7 +62,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
             <div className="tw-ml-2">
               <div className="tw-flex tw-items-center">
                 <div className="tw-text-white tw-mr-2">{params.row.name}</div>
-                {params.row.address_whitelist !== '' ? (
+                {params.row.address_whitelist !== '' || params.row.is_private ? (
                   <Tooltip title="Private Operator">
                     <LockOutlined sx={{ height: 18, width: 18, cursor: 'pointer' }} />
                   </Tooltip>
@@ -356,7 +356,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
         onPaginationModelChange={(paginationModel) => handlePaginationModelChange(paginationModel)}
         onRowSelectionModelChange={handleRowSelectionChange}
         rowSelectionModel={selectionModel}
-        isRowSelectable={(params: GridRowParams) => !params.row.address_whitelist}
+        isRowSelectable={(params: GridRowParams) => !params.row.address_whitelist || !params.row.is_private}
         loading={isLoading}
         rowHeight={68}
         disableColumnResize
