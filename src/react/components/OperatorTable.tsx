@@ -61,7 +61,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
             />
             <div className="tw-ml-2">
               <div className="tw-flex tw-items-center">
-                <div className="tw-text-white tw-mr-2">{params.row.name}</div>
+                <div className="tw-mr-2">{params.row.name}</div>
                 {params.row.address_whitelist !== '' || params.row.is_private ? (
                   <Tooltip title="Private Operator">
                     <LockOutlined sx={{ height: 18, width: 18, cursor: 'pointer' }} />
@@ -190,7 +190,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
   // Utility function to get default selected rows
   const getDefaultSelectedRows = () => {
     const defaultOperator = operatorList
-      .filter((operator: any) => operator.name.includes('DxPool') && operator.is_active === 1)
+      .filter((operator: any) => operator.name.includes('DxPool') && operator.is_active === 1 && !operator.is_private)
       .reduce((minOperator: any, currentOperator: any) => {
         return currentOperator.validators_count < minOperator.validators_count ? currentOperator : minOperator;
       }, { validators_count: Infinity });
@@ -343,7 +343,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
   };
 
   return (
-    <div style={{ height: 500 }}>
+    <div style={{ height: 520 }}>
       <DataGrid
         rows={operators}
         columns={columns}
@@ -356,15 +356,53 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
         onPaginationModelChange={(paginationModel) => handlePaginationModelChange(paginationModel)}
         onRowSelectionModelChange={handleRowSelectionChange}
         rowSelectionModel={selectionModel}
-        isRowSelectable={(params: GridRowParams) => !params.row.address_whitelist || !params.row.is_private}
+        isRowSelectable={(params: GridRowParams) => params.row.address_whitelist === "" && !params.row.is_private}
         loading={isLoading}
         rowHeight={68}
         disableColumnResize
         disableRowSelectionOnClick
+        disableColumnMenu
         sx={{
           fontWeight: 600,
-          background: '#303136',
+          background: '#FAFAFA',
           border: 0,
+          "& .MuiDataGrid-root": {
+            "--rowBorderColor": "#EEEEEE",
+            "--DataGrid-rowBorderColor": "#eeeeee",
+          },
+
+          "& .MuiDataGrid-row": {
+            "--rowBorderColor": "#EEEEEE",
+            "--DataGrid-rowBorderColor": "#eeeeee"
+          },
+
+          "& .MuiCheckbox-root": {
+            color: '#B0B0B0',
+            '&.Mui-checked': {
+              color: '#00CDD0',
+            },
+          },
+
+          "& .MuiCheckbox-root .MuiSvgIcon-root": {
+            '&.Mui-checked': {
+              fill: '#FFFFFF',
+            },
+          },
+          "& .MuiDataGrid-columnHeaders": {
+            borderBottom: "1px solid #EEEEEE",
+          },
+
+          "& .MuiDataGrid-footerContainer": {
+            borderTop: "1px solid #EEEEEE",
+          },
+
+          "& .MuiDataGrid-columnHeader .MuiDataGrid-sortIcon": {
+            color: '#333333',
+          },
+
+          "& .MuiMenu-paper": {
+            backgroundColor: '#eeeeee',
+          },
         }}
       />
     </div>

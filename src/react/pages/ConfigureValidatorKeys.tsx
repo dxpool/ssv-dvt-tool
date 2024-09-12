@@ -30,7 +30,6 @@ const ConfigureValidatorKeys = () => {
   const usingExistingFlow = history.location.pathname === paths.CONFIGURE_EXISTING;
 
   const [passwordToVerify, setPasswordToVerify] = useState("");
-  const [verifyPassword, setVerifyPassword] = useState(false);
   const [passwordVerifyError, setPasswordVerifyError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -51,7 +50,7 @@ const ConfigureValidatorKeys = () => {
     if (!mnemonic) {
       history.replace(usingExistingFlow ? paths.EXISTING_IMPORT : paths.CREATE_MNEMONIC);
     }
-  }, []);
+  }, [mnemonic, history, usingExistingFlow]);
 
   const updateNumberOfKeys = (e: React.ChangeEvent<HTMLInputElement>) => {
     const num = parseInt(e.target.value);
@@ -67,6 +66,10 @@ const ConfigureValidatorKeys = () => {
     setInputPassword(e.target.value);
   };
 
+  const updatePasswordToVerify = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswordToVerify(e.target.value);
+  };
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -76,13 +79,8 @@ const ConfigureValidatorKeys = () => {
     setInputWithdrawalAddress(address);
   };
 
-  const handleEth1WithdrawAddressInputBlur = async (e: any) => {
-    await validateWithdrawAddress(e.target.value);
-  }
-
   /**
-   * Validates each value simultaneously and if there are no errors will show the
-   * user the password verification input
+   * Validates each value simultaneously and if there are no errors will move to the next step
    */
   const validateInputs = async () => {
     let isError = false;
@@ -101,6 +99,13 @@ const ConfigureValidatorKeys = () => {
       setInputPasswordStrengthError(false);
     }
 
+    if (inputPassword !== passwordToVerify) {
+      setPasswordVerifyError(true);
+      isError = true;
+    } else {
+      setPasswordVerifyError(false);
+    }
+
     if (inputIndex < 0) {
       setInputIndexError(true);
       isError = true;
@@ -108,7 +113,7 @@ const ConfigureValidatorKeys = () => {
       setInputIndexError(false);
     }
 
-    if (inputWithdrawalAddress != "") {
+    if (inputWithdrawalAddress !== "") {
       const isValidAddress = await window.web3Utils.isAddress(inputWithdrawalAddress);
 
       if (!isValidAddress) {
@@ -124,25 +129,35 @@ const ConfigureValidatorKeys = () => {
     }
 
     if (!isError) {
-      setVerifyPassword(true);
-      setShowPassword(false);
+      // Set context
+      setIndex(inputIndex);
+      setNumberOfKeys(inputNumberOfKeys);
+      setPassword(inputPassword);
+      setWithdrawalAddress(inputWithdrawalAddress);
+
+      const path = usingExistingFlow ? paths.CHOOSE_OPERATOR_EXISTING : paths.CHOOSE_OPERATOR;
+      history.push(path);
     }
   };
 
-  const validatePasswordOnInput = (password: any) => {
+  const validatePasswordOnInput = (password: string) => {
     if (password.length < 8) {
       setInputPasswordStrengthError(true);
     } else {
       setInputPasswordStrengthError(false);
     }
-  }
+  };
 
-  const handlePasswordInputOnBlur = (e: any) => {
+  const handlePasswordInputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     validatePasswordOnInput(e.target.value);
-  }
+  };
+  
+  const handleEth1WithdrawAddressInputBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    await validateWithdrawAddress(e.target.value);
+  };
 
   const validateWithdrawAddress = async (address: string) => {
-    if (address != "") {
+    if (address !== "") {
       const isValidAddress = await window.web3Utils.isAddress(address);
 
       if (!isValidAddress) {
@@ -163,186 +178,160 @@ const ConfigureValidatorKeys = () => {
     }
   };
 
-  /**
-   * Verifies the passwords match and will move the user to the next step in the flow if so
-   */
-  const checkPassword = () => {
-    if (inputPassword.localeCompare(passwordToVerify) == 0) {
-      setPasswordVerifyError(false);
-      
-      // Set context
-      setIndex(inputIndex);
-      setNumberOfKeys(inputNumberOfKeys);
-      setPassword(inputPassword);
-      setWithdrawalAddress(inputWithdrawalAddress);
-
-      history.push(paths.CHOOSE_OPERATOR);
-    } else {
-      setPasswordVerifyError(true);
-    }
-  };
-
   const onBackClick = () => {
-    if (verifyPassword) {
-      // Only reset password of configure form so the user can see index, number of keys, and address
-      setPasswordToVerify("");
-      setVerifyPassword(false);
-      setPasswordVerifyError(false);
-      setInputPassword("");
+    // Reset context
+    setIndex(0);
+    setNumberOfKeys(1);
+    setWithdrawalAddress("");
+    setPassword("");
 
-      setWithdrawalAddress("");
-      setInputWithdrawalAddress("");
-      setShowPassword(false);
-    } else {
-      // Reset context
-      setIndex(0);
-      setNumberOfKeys(1);
-      setWithdrawalAddress("");
-      setPassword("");
-
-      // Reset form
-      setInputNumberOfKeys(1);
-      setInputIndex(0);
-      setInputWithdrawalAddress("");
-      setInputPassword("");
-      history.goBack();
-    }
+    // Reset form
+    setInputNumberOfKeys(1);
+    setInputIndex(0);
+    setInputWithdrawalAddress("");
+    setInputPassword("");
+    setPasswordToVerify("");
+    history.goBack();
   };
 
   const onNextClick = () => {
-    if (verifyPassword) {
-      checkPassword();
-    } else {
-      validateInputs();
-    }
+    validateInputs();
   };
-
 
   return (
     <WizardWrapper
       actionBarItems={[
-        <Button variant="text" color="info" onClick={() => onBackClick()} tabIndex={3} startIcon={<KeyboardArrowLeft />}>Back</Button>,
-        <Button variant="contained" color="primary" onClick={() => onNextClick()} tabIndex={2}>Next</Button>,
+        <Button variant="text" color="info" onClick={onBackClick} tabIndex={3} startIcon={<KeyboardArrowLeft />}>Back</Button>,
+        <Button variant="contained" color="primary" onClick={onNextClick} tabIndex={2}>Next</Button>,
       ]}
       activeTimelineIndex={1}
       timelineItems={usingExistingFlow ? ExistingMnemonicFlow : CreateMnemonicFlow}
       title="Create Keys"
     >
-      { verifyPassword ? (
-        <div className="tw-flex tw-flex-col tw-gap-4 tw-ml-14">
-          <div className="tw-text-lg">Just to be sure...</div>
-          <TextField
-            className="tw-mt-8 tw-w-[300px]"
-            id="password"
-            label="Retype Password"
-            type={showPassword ? 'text' : 'password'}
-            variant="outlined"
-            autoFocus
-            onChange={(e) => setPasswordToVerify(e.target.value)}
-            onKeyDown={handleKeyDown}
-            error={passwordVerifyError}
-            helperText={passwordVerifyError ? errors.PASSWORD_MATCH : ""}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <div onClick={togglePasswordVisibility} role="button" style={{ outline: 'none'}}>
-                    <IconButton edge="end" size="small" color="info">
-                      {showPassword ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </div>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </div>
-      ): (
-        <div className="tw-flex tw-flex-col tw-gap-4 tw-px-8">
-          <div className="tw-mb-4 tw-text-lg">Nice! Your Secret Recovery Phrase is verified. Now let's collect some info about the keys to create:</div>
+      <div className="tw-flex tw-flex-col tw-gap-4 tw-px-8">
+        <div className="tw-mb-4 tw-text-lg">Nice! Your Secret Recovery Phrase is verified. Now let's collect some info about the keys to create:</div>
 
-          <div className="tw-w-full tw-flex tw-flex-row tw-gap-4">
-            <Tooltip title={tooltips.NUMBER_OF_KEYS}>
-              <TextField
-                autoFocus
-                className="tw-flex-1"
-                id="number-of-keys"
-                label="Number of Validators"
-                variant="outlined"
-                type="number"
-                value={inputNumberOfKeys}
-                onChange={updateNumberOfKeys}
-                InputProps={{ inputProps: { min: 1, max: 1000 } }}
-                error={inputNumberOfKeysError}
-                helperText={ inputNumberOfKeysError ? errors.NUMBER_OF_KEYS : ""}
-              />
-            </Tooltip>
-
-            {usingExistingFlow && (
-              <Tooltip title={tooltips.STARTING_INDEX}>
-                <TextField
-                  className="tw-flex-1"
-                  id="index"
-                  label="Amount of Existing (starting index)"
-                  variant="outlined"
-                  type="number"
-                  value={inputIndex}
-                  onChange={updateIndex}
-                  InputProps={{ inputProps: { min: 1, max: 1000 } }}
-                  error={inputIndexError}
-                  helperText={inputIndexError ? errors.STARTING_INDEX : ""}
-                />
-            </Tooltip>
-            )}
-
-            <Tooltip title={tooltips.PASSWORD}>
-              <TextField
-                className="tw-flex-1"
-                id="password"
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                variant="outlined"
-                value={inputPassword}
-                onChange={updatePassword}
-                onBlur={handlePasswordInputOnBlur}
-                error={inputPasswordStrengthError}
-                helperText={inputPasswordStrengthError ? errors.PASSWORD_STRENGTH : ""}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <div tabIndex={-1} onClick={togglePasswordVisibility} role="button" style={{ outline: 'none'}}>
-                        <IconButton edge="end" size="small" color="info">
-                          {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                      </div>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Tooltip>
-          </div>
-          
-          <Typography className="tw-mt-8" variant="body1">
-            Please ensure that you have control over this address.
-          </Typography>
-          <Tooltip title={tooltips.ETH1_WITHDRAW_ADDRESS}>
+        <div className="tw-w-1/2 tw-flex tw-flex-row tw-pr-2">
+          <Tooltip title={tooltips.NUMBER_OF_KEYS}>
             <TextField
-              className="tw-mt-4 tw-w-[440px]"
-              id="eth1-withdraw-address"
-              label="Ethereum Withdrawal Address"
+              autoFocus
+              className="tw-flex-1"
+              id="number-of-keys"
+              label="Number of Validators"
               variant="outlined"
-              value={inputWithdrawalAddress}
-              onChange={updateEth1WithdrawAddress}
-              onBlur={handleEth1WithdrawAddressInputBlur}
-              onKeyDown={handleKeyDown}
-              error={inputWithdrawalAddressFormatError || inputWithdrawalAddressStrengthError}
-              helperText={
-                inputWithdrawalAddressFormatError ? errors.ADDRESS_FORMAT_ERROR :
-                inputWithdrawalAddressStrengthError ? errors.ADDRESS_STRENGTH : ""
-              }
+              type="number"
+              value={inputNumberOfKeys}
+              onChange={updateNumberOfKeys}
+              InputProps={{ inputProps: { min: 1, max: 1000 } }}
+              error={inputNumberOfKeysError}
+              helperText={ inputNumberOfKeysError ? errors.NUMBER_OF_KEYS : ""}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#ACACAC",
+                  }
+                },
+              }}
             />
           </Tooltip>
-          
         </div>
-      )}
+
+        <div className="tw-w-full tw-flex tw-flex-row tw-gap-4 tw-mt-4">
+          <Tooltip title={tooltips.PASSWORD}>
+            <TextField
+              className="tw-flex-1"
+              id="password"
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              variant="outlined"
+              value={inputPassword}
+              onChange={updatePassword}
+              onBlur={handlePasswordInputOnBlur}
+              error={inputPasswordStrengthError}
+              helperText={inputPasswordStrengthError ? errors.PASSWORD_STRENGTH : ""}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end" tabIndex={-1}>
+                    <div tabIndex={-1} onClick={togglePasswordVisibility} role="button" style={{ outline: 'none'}}>
+                      <IconButton edge="end" size="small" color="info" disableRipple tabIndex={-1}>
+                        {showPassword ? <Visibility /> : <VisibilityOff />}
+                      </IconButton>
+                    </div>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#ACACAC",
+                  }
+                },
+              }}
+            />
+          </Tooltip>
+
+          <Tooltip title={tooltips.PASSWORD}>
+            <TextField
+              className="tw-flex-1"
+              id="password-to-verify"
+              label="Retype Password"
+              type={showPassword ? 'text' : 'password'}
+              variant="outlined"
+              value={passwordToVerify}
+              onChange={updatePasswordToVerify}
+              onKeyDown={handleKeyDown}
+              error={passwordVerifyError}
+              helperText={passwordVerifyError ? errors.PASSWORD_MATCH : ""}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end" tabIndex={-1}>
+                    <div tabIndex={-1} onClick={togglePasswordVisibility} role="button" style={{ outline: 'none'}}>
+                      <IconButton edge="end" size="small" color="info" disableRipple tabIndex={-1}>
+                        {showPassword ? <Visibility /> : <VisibilityOff />}
+                      </IconButton>
+                    </div>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#ACACAC",
+                  }
+                },
+              }}
+            />
+          </Tooltip>
+        </div>
+
+        <Typography className="tw-mt-6" variant="body1">
+          Please ensure that you have control over this address.
+        </Typography>
+        <Tooltip title={tooltips.ETH1_WITHDRAW_ADDRESS}>
+          <TextField
+            className="tw-w-[440px]"
+            id="eth1-withdraw-address"
+            label="Ethereum Withdrawal Address"
+            variant="outlined"
+            value={inputWithdrawalAddress}
+            onChange={updateEth1WithdrawAddress}
+            onBlur={handleEth1WithdrawAddressInputBlur}
+            onKeyDown={handleKeyDown}
+            error={inputWithdrawalAddressFormatError || inputWithdrawalAddressStrengthError}
+            helperText={
+              inputWithdrawalAddressFormatError ? errors.ADDRESS_FORMAT_ERROR :
+              inputWithdrawalAddressStrengthError ? errors.ADDRESS_STRENGTH : ""
+            }
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#ACACAC",
+                }
+              },
+            }}
+          />
+        </Tooltip>
+      </div>
     </WizardWrapper>
   );
 };

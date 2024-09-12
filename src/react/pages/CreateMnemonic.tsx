@@ -26,10 +26,9 @@ const CreateMnemonic = () => {
   const [mnemonicValidationError, setMnemonicValidationError] = useState(false);
   const [mnemonicToVerify, setMnemonicToVerify] = useState<string>("");
   const [showLoader, setShowLoader] = useState(false);
-  const [verifyNext, setVerifyNext] = useState(false);
 
   // Text to show for the Next button based on the state
-  const nextText = useMemo(() => confirmMnemonic ? "Check" : verifyNext ? "I'm Sure" : mnemonic ? "Next" : "Create", [confirmMnemonic, mnemonic, verifyNext]);
+  const nextText = useMemo(() => (confirmMnemonic ? "Check" : mnemonic ? "Next" : "Create"), [confirmMnemonic, mnemonic]);
 
   useEffect(() => {
     // page loaded with mnemonic known. Can only happen when the user backs up from configure
@@ -59,23 +58,19 @@ const CreateMnemonic = () => {
       setConfirmMnemonic(false);
       setMnemonicToVerify("");
       setMnemonicValidationError(false);
-    } else if (verifyNext) {
-      setVerifyNext(false);
     } else if (mnemonic) {
       setMnemonic("");
     } else {
-      history.replace("/")
+      history.replace("/");
     }
   };
 
   const onNextClick = () => {
     if (confirmMnemonic) {
       verifyMnemonic();
-    } else if (verifyNext) {
+    } else if (mnemonic) {
       setConfirmMnemonic(true);
       setMnemonicToVerify("");
-    } else if (mnemonic) {
-      setVerifyNext(true);
     } else {
       setShowLoader(true);
       generateMnemonic();
@@ -99,7 +94,24 @@ const CreateMnemonic = () => {
                   label={"Word " + (i+1)}
                   sx={{
                     "& .MuiInputBase-input.Mui-disabled": {
-                      WebkitTextFillColor: "#FFFFFF",
+                      WebkitTextFillColor: "#333333",
+                    },
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "#ACACAC",
+                      },
+                      "&.Mui-disabled fieldset": {
+                        borderColor: "#ACACAC",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "#989898",
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#989898",
+                    },
+                    "& .MuiInputLabel-root.Mui-disabled": {
+                      color: "#989898",
                     },
                   }}
                   variant="outlined"
@@ -162,10 +174,7 @@ const CreateMnemonic = () => {
       ) : mnemonic ? (
         <div className="tw-flex tw-flex-col tw-gap-4">
           <div className="tw-px-8 tw-text-center">
-            {verifyNext ?
-              <div className="tw-text-cyan tw-mb-4 tw-text-lg">Make sure you back it up - without it you will not be able to retrieve your funds. You will be prompted for it next.</div> :
-              <div className="tw-mb-4 tw-text-lg">Below is your Secret Recovery Phrase. Make sure you back it up - without it you will not be able to retrieve your funds.</div>
-            }
+            <div className="tw-text-primary tw-mb-4 tw-text-lg tw-font-semibold">Make sure you back it up - without it you will not be able to retrieve your funds. You will be prompted for it next.</div>
           </div>
 
           <div className="tw-flex tw-flex-row tw-gap-y-4 tw-items-center tw-justify-center tw-ml-8">
@@ -175,8 +184,13 @@ const CreateMnemonic = () => {
                 <IconButton
                   aria-label="copy"
                   autoFocus
-                  color="primary"
                   onClick={copyMnemonic}
+                  sx={{
+                    color: '#00CDD0',
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                    },
+                  }}
                 >
                   <FileCopy />
                 </IconButton>
@@ -192,10 +206,8 @@ const CreateMnemonic = () => {
             In this step, we'll generate a Secret Recovery Phrase (traditionally referred to as a "mnemonic") and a set of validator keys for you. For more information, visit: https://kb.beaconcha.in/ethereum-2-keys
           </Typography>
           <Typography className="tw-text-left tw-text-lg" variant="body1">
-            It is{" "}
-            <span className="tw-font-bold">very</span>{" "}
-            important to{" "}
-            <span className="tw-text-cyan">keep both your secret recovery phrase and your validator keys safe and secure</span>{" "}
+            It is very important to{" "}
+            <span className="tw-text-primary tw-font-semibold">keep both your secret recovery phrase and your validator keys safe and secure</span>{" "}
             as you will need them to retrieve your funds later. Anybody with access to these will also be able to steal your funds! For tips on storage, see: https://www.ledger.com/blog/how-to-protect-your-seed-phrase
           </Typography>
           <Typography className="tw-text-left tw-text-lg" variant="body1">

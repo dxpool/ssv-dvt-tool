@@ -12,7 +12,7 @@ interface WagyuModalParams {
 const WagyuModal = ({ children, className, onClose, open }: WagyuModalParams & ModalProps) => (
   <Modal onClose={onClose} open={open}>
     <div className="tw-fixed tw-inset-0 tw-flex tw-items-center tw-justify-center">
-      <div className={`tw-flex tw-flex-col tw-bg-backgroundLight tw-rounded-3xl tw-text-center ${className || ""}`}>
+      <div className={`tw-flex tw-flex-col tw-bg-backgroundLight tw-rounded-2xl tw-text-center ${className || ""}`}>
         {children}
       </div>
     </div>

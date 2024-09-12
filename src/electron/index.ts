@@ -65,12 +65,13 @@ app.on("ready", () => {
    * Create the window in which to render the React app
    */
   const window = new BrowserWindow({
-    width: 1500,
+    width: 1279,
     height: 780,
     icon: iconPath,
     title: title,
-    backgroundColor: '#18181a',
+    backgroundColor: '#F5F5F5',
     frame: false,
+    titleBarStyle: 'hiddenInset',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,

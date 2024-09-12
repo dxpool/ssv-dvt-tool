@@ -111,6 +111,13 @@ const MnemonicImport = () => {
             value={inputMnemonic}
             onChange={(e) => setInputMnemonic(e.target.value)}
             onKeyDown={handleKeyDown}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#cccccc",
+                }
+              },
+            }}
           />
         )}
       </div>

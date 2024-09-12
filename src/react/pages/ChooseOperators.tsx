@@ -14,7 +14,6 @@ import { DEFAULT_CLUSTER_SIZE, FILTER_OPTION, CreateMnemonicFlow, ExistingMnemon
 import { NetworkTypeConfig } from "../../types.config";
 import { LowerCaseNetwork } from "../types";
 import { GlobalContext } from "../GlobalContext";
-import config from "../../config";
 import "../components.css"
 
 type ClusterSizeOption = {
@@ -29,12 +28,13 @@ type ClusterSizeOption = {
  */
 const ChooseOperators = () => {
   const history = useHistory();
-  const usingExistingFlow = history.location.pathname === paths.CONFIGURE_EXISTING;
+  const usingExistingFlow = history.location.pathname === paths.CHOOSE_OPERATOR_EXISTING;
+
   const { network, operatorList } = useContext(GlobalContext);
   const networkKey = network.toLowerCase() as keyof NetworkTypeConfig;
 
   const defaultOperator = operatorList
-  .filter((operator: any) => operator.name.includes('DxPool') && operator.is_active === 1)
+  .filter((operator: any) => operator.name.includes('DxPool') && operator.is_active === 1 && !operator.is_private)
   .reduce((minOperator: any, currentOperator: any) => {
     return currentOperator.validators_count < minOperator.validators_count ? currentOperator : minOperator;
   }, operatorList[0]);
@@ -113,9 +113,10 @@ const ChooseOperators = () => {
 
   const onNextClick = () => {
     const data = selectedOperators;
+  
     history.push({
       pathname: usingExistingFlow ? paths.CREATE_KEYS_EXISTING : paths.CREATE_KEYS_CREATE,
-      state: { data: data }
+      state: { data }
     });
   };
 
@@ -226,33 +227,36 @@ const ChooseOperators = () => {
     activeTimelineIndex={2}
     timelineItems={usingExistingFlow ? ExistingMnemonicFlow : CreateMnemonicFlow}
     title="Choose your operator">
-      <div className="tw-max-w-[1580px] tw-mx-auto tw-grid tw-grid-cols-2 xl:tw-grid-cols-3 tw-rounded-xl tw-shadow-xl tw-mx-4 tw-bg-[#26272B] tw-pb-4 tw-px-4">
+      <div className="tw-max-w-[1580px] tw-mx-auto tw-grid tw-grid-cols-2 xl:tw-grid-cols-4 tw-rounded-xl tw-shadow-xl tw-mx-4 tw-bg-[#FAFAFA] tw-pb-4 tw-px-4">
         {/* left section - cluster size & operator table */}
-        <div className="tw-col-span-2 tw-px-4 tw-py-2">
+        <div className="tw-col-span-3 tw-px-4 tw-py-2">
           <div className="tw-flex tw-items-center">
-            <h2 className="tw-font-normal tw-mr-8">Pick the cluster of network operators to run your validator</h2>
+            <h2 className="tw-font-normal tw-mr-8 tw-text-primary">Pick the cluster of network operators to run your validator</h2>
             <OperatorSearch onSearch={handleSearch} />
           </div>
           <div className="tw-flex tw-items-center tw-mb-8 tw-flex-wrap">
             <div className="tw-text-lg tw-mr-4 tw-min-w-24 tw-mt-4 tw-text-grayText">Cluster Size</div>
             {/* cluster size option */}
             {clusterSizeOptions.map((item: ClusterSizeOption, index: number) => (
-              <div onClick={() => handleClusterSize(item)} className={`tw-mt-4 tw-cursor-pointer tw-border tw-mr-4 tw-min-w-[160px] tw-h-10 tw-leading-10 tw-text-center tw-rounded-md tw-bg-darkGray ${item.active ? 'tw-border-solid tw-border-white' : ''}`} key={index}>
+              <div onClick={() => handleClusterSize(item)} className={`tw-mt-4 tw-cursor-pointer tw-border tw-mr-4 tw-min-w-[160px] tw-h-10 tw-leading-10 tw-text-center tw-rounded-md tw-bg-white ${item.active ? 'tw-border-solid tw-border-gray5' : ''}`} key={index}>
                 {item.label}
               </div>
             ))}
             {/* Filter */}
             <Button onClick={handleClick} className="tw-mt-4 tw-h-10 tw-flex tw-items-center">
-              <FilterAltOutlined style={{ color: '#ffffff' }} />
-              { filterValue.length > 0 ? <div className="tw-h-5 tw-w-5 tw-flex tw-justify-center tw-items-center tw-text-white tw-ml-2 tw-rounded-full tw-bg-lightBlue">{filterValue.length}</div> : '' }
+              <FilterAltOutlined />
+              { filterValue.length > 0 ? <div className="tw-h-5 tw-w-5 tw-flex tw-justify-center tw-items-center tw-ml-2 tw-rounded-full tw-bg-lightBlue">{filterValue.length}</div> : '' }
             </Button>
             <Menu
               id="multi-select-menu"
               anchorEl={anchorEl}
               open={isOpen}
-              onClose={handleClose}
+              onClose={handleClose} 
               MenuListProps={{
                 'aria-labelledby': 'multi-select-button',
+                sx: {
+                  backgroundColor: '#f0f0f0',
+                },
               }}
             >
               {FILTER_OPTION.map((option, index) => (
@@ -269,34 +273,36 @@ const ChooseOperators = () => {
         
         {/* right section - selected operators & warning */}
         <div className="tw-col-span-3 xl:tw-col-span-1 tw-px-4 tw-py-2">
+          <div className="tw-hidden xl:tw-block" style={{ height: '4.5rem' }}></div>
+
           <div className="tw-flex tw-justify-between tw-items-center tw-mr-4">
-            <h2 className="tw-font-normal">Selected Operators</h2>
-            <h2>{Object.keys(selectedOperators).length} / {selectedClusterSize}</h2>
+            <h2 className="tw-font-normal tw-text-primary tw-text-lg">Selected Operators</h2>
+            <h2 className="tw-text-primary tw-text-lg">{Object.keys(selectedOperators).length} / {selectedClusterSize}</h2>
           </div>
             
-          <div className="xl:tw-h-[620px] tw-overflow-y-auto tw-grid tw-grid-cols-2 xl:tw-grid-cols-1 tw-mb-8">
+          <div className="xl:tw-h-[555px] tw-overflow-y-auto tw-grid tw-grid-cols-2 xl:tw-grid-cols-1 tw-mb-4">
             {Array(selectedClusterSize).fill(null).map((_, i) => {
               const operator = sortedSelectedOperators[i];
               return operator ? (
                 <div className="tw-col-span-1" key={i}>
-                  <div className="tw-border tw-border-gray tw-grid tw-grid-cols-12 tw-h-32 tw-mt-4 rounded-xl tw-relative clusterClass tw-mr-4">
+                  <div className="tw-border tw-border-gray tw-grid tw-grid-cols-12 tw-h-28 tw-mt-4 rounded-xl tw-relative clusterClass tw-mr-4">
                     <Avatar
                       className="tw-col-span-2"
                       alt="logo"
                       src={operator.logo}
-                      sx={{ width: 40, height: 40 }}
+                      sx={{ width: 36, height: 36 }}
                     />
                     <div className="tw-col-span-9">
-                      <div className="tw-text-xl tw-font-semibold">{operator.name}</div>
+                      <div className="tw-text-lg tw-font-semibold tw-text-primary">{operator.name}</div>
                       <div className="tw-text-gray tw-font-semibold">ID: {operator.id}</div>
-                      <div className="tw-mt-4 tw-font-bold">{(Number(operator.fee) / SSV_EXCHANGE).toFixed(2)} SSV</div>
+                      <div className="tw-mt-4 tw-font-bold tw-text-primary">{(Number(operator.fee) / SSV_EXCHANGE).toFixed(2)} SSV</div>
                     </div>
                     <div className="tw-col-span-1 tw-flex-col tw-flex tw-justify-between tw-items-center">
                       <div>
                         <MevRelayerTooltipComponent mevRelays={operator.mev_relays} />
                       </div>
                       {operator.id == defaultOperator.id && (
-                        <div className="tw-w-5 tw-items-end"><Lock color="secondary" /></div>
+                        <div className="tw-w-4 tw-items-end tw-mr-1 tw-pb-1"><Lock color="secondary" /></div>
                       )}
                     </div>
                     {operator.id !== defaultOperator.id && (
@@ -310,7 +316,7 @@ const ChooseOperators = () => {
                   </div>
                 </div>
               ) : (
-                <div key={i} className="tw-col-span-1 tw-rounded-xl tw-bg-[#303136] tw-font-semibold tw-border-2 tw-border-dashed tw-border-gray tw-p-4 tw-flex tw-items-center tw-mr-4 tw-justify-center tw-h-32 tw-mt-4">
+                <div key={i} className="tw-col-span-1 tw-rounded-xl tw-bg-white tw-text-grayText tw-font-semibold tw-border-2 tw-border-dashed tw-border-gray tw-p-4 tw-flex tw-items-center tw-mr-4 tw-justify-center tw-h-28 tw-mt-4">
                   Select operator { i + 1 }
                 </div>
               );

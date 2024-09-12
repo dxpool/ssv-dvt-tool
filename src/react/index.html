@@ -1,68 +1,79 @@
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
     <title>DxPool DVT Tool</title>
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #F5F5F5;
+      }
+
+      .drag-region {
+        -webkit-app-region: drag;
+        height: 30px;
+        width: 100%;
+        background-color: #F5F5F5;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 10;
+      }
+
+      .window-controls {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: 11;
+        display: flex;
+      }
+
+      .window-button {
+        width: 45px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        -webkit-app-region: no-drag;
+        background-color: #ccc;
+        border: none;
+        outline: none;
+      }
+
+      .window-button:hover {
+        background-color: #bbb;
+      }
+
+      #app {
+        width: 100%;
+        height: calc(100% - 30px);
+        overflow: auto;
+        padding-top: 30px;
+      }
+    </style>
   </head>
-  <style>
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    .title-bar {
-      -webkit-app-region: drag;
-      height: 30px;
-      background-color: #18181a;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 10px;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-    }
-    .window-controls {
-      display: flex;
-      align-items: center;
-      -webkit-app-region: no-drag;
-    }
-    .window-controls button {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: none;
-      margin-right: 8px;
-      cursor: pointer;
-    }
-    .window-controls .close {
-      background-color: #ff5f57;
-    }
-    .window-controls .minimize {
-      background-color: #ffbd2e;
-    }
-    .window-controls .maximize {
-      background-color: #28c940;
-    }
-    #app {
-      width: 100%;
-      height: calc(100% - 30px);
-      overflow: auto;
-      padding-top: 30px;
-    }
-  </style>
-  <body style="width:100%;height:100%;margin:0">
-    <div class="title-bar">
-      <div class="window-controls">
-        <button class="close" onclick="window.electron?.close()"></button>
-        <button class="minimize" onclick="window.electron?.minimize()"></button>
-        <button class="maximize" onclick="window.electron?.maximize()"></button>
-      </div>
-    </div>
-    <div id="app">
-    </div>
+  <body>
+    <div class="drag-region"></div>
+    <div class="window-controls" id="window-controls"></div>
+
+    <div id="app"></div>
+
+    <script>
+      const platform = window.electron?.platform;
+      const controls = document.getElementById('window-controls');
+
+      if (platform === 'win32') {
+        controls.innerHTML = `
+          <button class="window-button close" onclick="window.electron?.close()">x</button>
+          <button class="window-button minimize" onclick="window.electron?.minimize()">-</button>
+          <button class="window-button maximize" onclick="window.electron?.maximize()">□</button>
+        `;
+      }
+    </script>
   </body>
 </html>

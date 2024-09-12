@@ -37,8 +37,8 @@ const WizardWrapper = ({
       <div className="tw-flex tw-items-center tw-mt-4 tw-mb-8">
         <OnlineDetector />
         <div className="tw-flex-grow"></div>
-        <Typography variant="caption" className="tw-text-gray tw-mr-6 tw-text-lg tw-h-[50px] tw-leading-[50px]">
-          Selected Network: {network}
+        <Typography variant="caption" className="tw-text-gray tw-mr-6 tw-text-sm tw-h-10 tw-leading-10">
+          Current Network: {network}
         </Typography>
       </div>
 
@@ -49,11 +49,36 @@ const WizardWrapper = ({
       <Stepper
         activeStep={activeTimelineIndex}
         alternativeLabel
-        className="tw-bg-transparent tw-my-14"
+        sx={{
+          backgroundColor: 'transparent',
+          my: 8
+        }}
       >
         {timelineItems.map((step: StepKey, index: number) => (
           <Step key={index}>
-            <StepLabel>{stepLabels[step]}</StepLabel>
+            <StepLabel
+              sx={{
+                color: '#333333',
+                
+              }}
+              StepIconProps={{
+                sx: {
+                  color: '#DFDFDF',
+                  '&.Mui-active': {
+                    color: '#00CDD0',
+                    backgroundColor: '#00CDD0',
+                    borderRadius: '50%',
+                  },
+                  '&.Mui-completed': {
+                    color: '#00CDD0',
+                    backgroundColor: '#000000',
+                    borderRadius: '50%',
+                  },
+                },
+              }}
+            >
+              {stepLabels[step]}
+            </StepLabel>
           </Step>
         ))}
       </Stepper>

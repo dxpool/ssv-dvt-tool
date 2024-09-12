@@ -82,8 +82,8 @@ export const paths = {
 	CREATE_CREDENTIALS: "/create-btec",
 	FINISH_CREDENTIALS: "/finish-btec",
 
-	CHOOSE_OPERATOR: "/slice-key-store",
-	CHOOSE_OPERATOR_EXISTING: "/choose-operator-existing",
+	CHOOSE_OPERATOR_EXISTING: '/choose-operator-existing',
+  CHOOSE_OPERATOR: '/choose-operator-create',
 };
 
 export const DEFAULT_CLUSTER_SIZE = 4;

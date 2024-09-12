@@ -121,6 +121,13 @@ const VerifyMnemonic = ({
             value={mnemonicToVerify}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMnemonicToVerify(e.currentTarget.value)}
             onKeyDown={handleKeyDown}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#cccccc",
+                }
+              },
+            }}
           />
         </Grid>
       )}

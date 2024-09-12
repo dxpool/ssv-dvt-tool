@@ -6,6 +6,7 @@ import { paths, tooltips } from "../constants";
 import { GlobalContext } from "../GlobalContext";
 import { HomePageImage } from "../icons/HomePageImage";
 import { ReuseMnemonicAction } from "../types";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import NetworkPickerModal from "../modals/NetworkPickerModal";
 import SyncOperatorModal from "../modals/SyncOperatorModal";
@@ -22,29 +23,13 @@ const Home = () => {
   const [wasNetworkModalOpened, setWasNetworkModalOpened] = useState(false);
   const [showNetworkModal, setShowNetworkModal] = useState(false);
   const [showReuseMnemonicModal, setShowReuseMnemonicModal] = useState(false);
+  const [shouldOpenSyncAfterNetwork, setShouldOpenSyncAfterNetwork] = useState(false);
+  const [isManualNetworkOpen, setIsManualNetworkOpen] = useState(false);
   const { network } = useContext(GlobalContext);
 
   let history = useHistory();
 
   const tabIndex = useMemo(() => showNetworkModal ? -1 : 1, [showNetworkModal]);
-
-  // start process by open sync operator dialog 
-  const handleOpenSyncModal = () => {
-    setSyncOperatorDialogOpen(true);
-    setWasSyncOperatorModalOpened(true);
-  };
-
-  // choose network modal
-  const handleOpenNetworkModal = () => {
-    if (wasNetworkModalOpened) return;
-    setShowNetworkModal(true);
-    setWasNetworkModalOpened(true);
-  };
-
-  const handleCloseNetworkModal = () => {
-    setShowNetworkModal(false);
-    handleOpenSyncModal();
-  };
 
   const handleCloseSyncOperatorDialog = () => {
     setSyncOperatorDialogOpen(false);
@@ -74,36 +59,67 @@ const Home = () => {
   };
 
   const handleReuseMnemonicActionSubmit = (action: ReuseMnemonicAction) => {
-    setShowReuseMnemonicModal(false);
+    // setShowReuseMnemonicModal(false);
     if (action === ReuseMnemonicAction.RegenerateKeys) {
-
-      history.push(paths.EXISTING_IMPORT);
+      history.push(paths.EXISTING_IMPORT);handleStartProcess
     } else if (action === ReuseMnemonicAction.GenerateBLSToExecutionChange) {
-
       history.push(paths.BTEC_IMPORT);
     }
   };
 
+  // start process by open sync operator dialog 
+  const handleOpenSyncModal = () => {
+    setSyncOperatorDialogOpen(true);
+    setWasSyncOperatorModalOpened(true);
+  };
+
+  const handleOpenNetworkModal = (isManual = false) => {
+    setShowNetworkModal(true);
+    setIsManualNetworkOpen(isManual);
+  };
+
+  const handleCloseNetworkModal = () => {
+    setShowNetworkModal(false);
+    setWasNetworkModalOpened(true);
+    if (shouldOpenSyncAfterNetwork && !isManualNetworkOpen) {
+      handleOpenSyncModal();
+    }
+    setShouldOpenSyncAfterNetwork(false); // reset should open sync flag
+    setIsManualNetworkOpen(false); // reset manual open network flag
+  };
+
+  const handleStartProcess = () => {
+    if (wasNetworkModalOpened) {
+      handleOpenSyncModal();
+    } else {
+      setShouldOpenSyncAfterNetwork(true); // open sync after network is selected
+      handleOpenNetworkModal(false); // mark as none manual open
+    }
+  };
+
   return (
-    <div className="tw-flex tw-flex-col tw-pt-8">
+    <div className="tw-flex tw-flex-col tw-pt-4">
       <div className="tw-pr-8 tw-text-right tw-w-full">
         <span className="tw-text-gray tw-text-sm">Select Network:</span>{" "}
 
-        <Button color="primary" onClick={handleOpenNetworkModal} tabIndex={tabIndex}>
+        <Button color="primary" onClick={() => handleOpenNetworkModal(true)}  tabIndex={tabIndex}>
           {network}
         </Button>
       </div>
 
       <div className="tw-flex tw-flex-col tw-items-center tw-mt-4">
-        <div className="tw-w-full tw-max-w-md">
+        <div className="tw-flex tw-justify-center tw-w-full tw-mt-4">
           <HomePageImage />
         </div>
 
-        <Typography variant="h6" className="tw-mt-12">Your key generator for staking on Ethereum</Typography>
-        <Typography className="tw-w-1/3 tw-text-center tw-mt-2">
-          <Tooltip title={tooltips.SYNC_AND_OFFLINE}>
-            <span>Distribute your validation duties among a set of distributed nodes to improve your validator resilience, safety, liveliness, and diversity.</span>
-          </Tooltip>
+        <Typography variant="h5" className="tw-mt-10 tw-font-bold">Your key generator for staking on Ethereum</Typography>
+        <Typography className="tw-w-1/2 tw-text-center tw-mt-2">
+          <span>
+            <span className="tw-text-lg">Distribute your validation duties among a set of distributed nodes to improve your validator resilience, safety, liveliness, and diversity.</span>
+            <Tooltip title={<span style={{ fontSize: '0.85rem' }}>{tooltips.SYNC_AND_OFFLINE}</span>} placement="top-end">
+              <InfoOutlinedIcon className="tw-ml-1 tw-cursor-pointer tw-align-middle tw-h-4" sx={{color: '#A4A4A4'}} />
+            </Tooltip>
+          </span>
         </Typography>
 
         {!wasSyncOperatorModalOpened && (
@@ -111,8 +127,9 @@ const Home = () => {
             variant="contained"
             color="primary"
             className="tw-mt-10"
-            onClick={handleOpenNetworkModal}
+            onClick={handleStartProcess}
             tabIndex={tabIndex}
+            sx={{ width: '200px' }}
           >
             Start the process
           </Button>
@@ -127,17 +144,17 @@ const Home = () => {
               onClick={handleCreateNewMnemonic}
               tabIndex={tabIndex}
             >
-              Create new secret recovery phrase
+              Generate new mnemonic for validator maintenance
             </Button>
 
-            <Tooltip title={tooltips.IMPORT_MNEMONIC}>
+            <Tooltip title={tooltips.IMPORT_MNEMONIC} placement="right">
               <Button
                 className="tw-text-gray tw-mt-2"
                 size="small"
-                onClick={handleUseExistingMnemonic}
+                onClick={() => handleReuseMnemonicActionSubmit(ReuseMnemonicAction.RegenerateKeys)}
                 tabIndex={tabIndex}
               >
-                Use Existing Secret Recovery Phrase
+                Use Existing mnemonic for validator maintenance
               </Button>
             </Tooltip>
           </>

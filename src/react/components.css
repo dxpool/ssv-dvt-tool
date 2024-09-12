@@ -3,7 +3,7 @@
 }
 
 .clusterClass {
-  padding: 1rem;
+  padding: 0.5rem 1rem 1rem 1rem;
   border: 1px solid #3C3D43;
   border-radius: 12px;
 }
@@ -27,11 +27,11 @@
 }
 
 .mev-container {
-  background-color: #3F3F46;
-  color: #F9F9F9;
+  background-color: #EEEEEE;
+  color: #333333;
 }
 
 .no-mev-container {
-  background-color: #3F3F46;
+  background-color: #EEEEEE;
   color: #9999A2;
 }

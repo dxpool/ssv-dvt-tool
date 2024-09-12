@@ -143,14 +143,14 @@ const SyncOperatorModal = ({onClose, onSkip, onError, onCancel, showModal}: Sync
           ) : (
             <>
               <div>Please note that synchronization requires a short period of Internet connection, it is recommended to continue subsequent operations as soon as possible after the completion of synchronization, otherwise changes in synchronization information may lead to loss of your properties.</div>
-              <div className="tw-text-teal tw-mt-4">You can disconnect from the Internet after the completion of synchronization.</div>
+              <div className="tw-text-grayText tw-mt-4">You can disconnect from the Internet after the completion of synchronization.</div>
             </>
           )}
         </div>
 
         { isConfirmed && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <CircularProgressWithLabel value={progress} />
+          <CircularProgressWithLabel value={progress} sx={{color: '#00CDD0'}} />
         </Box>
         )}
 
