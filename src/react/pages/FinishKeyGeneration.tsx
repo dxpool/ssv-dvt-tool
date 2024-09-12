@@ -57,7 +57,7 @@ const FinishKeyGeneration = () => {
       timelineItems={usingExistingFlow ? ExistingMnemonicFlow : CreateMnemonicFlow}
       title="Create Keys"
     >
-      <div className="tw-flex tw-flex-col tw-gap-2 tw-max-w-[1580px] tw-mx-4 tw-mb-12">
+      <div className="tw-flex tw-flex-col tw-gap-2 tw-max-w-[1580px] tw-mx-4">
         <Typography variant="body1">
           Your keys have been created here:{" "}
           <Link
@@ -93,7 +93,7 @@ const FinishKeyGeneration = () => {
           </Typography>
         </div>
 
-        <div className="tw-mt-4">
+        <div className="tw-mt-2">
           <Typography className="tw-text-primary tw-font-semibold">Secret Recovery Phrase (24 words)</Typography>
           <Typography variant="body2">
             This was the first thing you created.  It is also known as a "mnemonic" or "seed phrase".  You'll need this to withdraw your funds.  Keep multiple copies in different physical locations safe from theft, fire, water and other hazards. Keep it private.  There is no way to recover this.

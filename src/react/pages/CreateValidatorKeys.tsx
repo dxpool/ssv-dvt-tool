@@ -185,11 +185,11 @@ const CreateValidatorKeys = () => {
         <Loader message="The duration of this process depends on how many keys you are generating and the performance of your computer.  Generating one key takes about 30 seconds.  Generating 100 keys may take about 10 minutes." />
       ) : (
         <div className="tw-flex tw-flex-col tw-gap-4">
-          <Typography className="tw-text-lg tw-mb-8 tw-ml-14">Choose a folder where we should save your keys.</Typography>
+          <Typography className="tw-text-lg tw-mb-6 tw-ml-14">Choose a folder where we should save your keys.</Typography>
 
           <FolderSelector onFolderSelect={onFolderSelect} displayType="image" />
           
-          <div className="tw-text-center tw-mt-4">
+          <div className="tw-text-center">
             {selectedFolder ? (
               <Typography className="tw-text-lg">You've selected: {selectedFolder}</Typography>
             ) : (
