@@ -36,12 +36,11 @@ const OnlineWarningModal = ({ onClose, onHideWarning, open }: OnlineWarningModal
       <div className="tw-flex tw-items-center tw-justify-center">
         <Button
           color="primary"
-          onClick={() => onClose()}
+          onClick={() => onHideWarning()}
           variant="contained"
         >
-          Close
+          Confirm
         </Button>
-        <div className="tw-text-gray tw-ml-4 tw-cursor-pointer" onClick={() => onHideWarning()}>Hide Warning</div>
       </div>
     </div>
   </WagyuModal>

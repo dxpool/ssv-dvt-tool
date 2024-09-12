@@ -27,7 +27,7 @@ export const OnlineDetector = () => {
 
   const onHideWarning = () => {
     setOpen(false);
-    setShowWarning(false);
+    // setShowWarning(false);
   };
 
   const onClose = () => {
