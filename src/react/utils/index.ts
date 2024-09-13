@@ -98,3 +98,14 @@ export const debounce = <T extends (...args: any[]) => void>(func: T, wait: numb
     }, wait);
   };
 };
+
+export function cutString(str: string, len1: number, len2: number) {
+  if (!str) return
+
+  let strlen = str.length
+  if ( strlen <= len1 + len2) return str
+
+  str = str.substring(0, len1) + '...' + str.substring(strlen - len2)
+
+  return str
+}

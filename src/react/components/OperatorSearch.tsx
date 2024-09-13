@@ -34,7 +34,7 @@ export default function OperatorSearch({ onSearch }: OperatorSearchProps) {
       sx={{ p: "2px 4px", display: "flex", alignItems: "center", marginBottom: 0, backgroundColor: '#f5f5f9' }}
       onSubmit={handleSubmit}
     >
-      <div className="tw-p-2" onClick={handleSearch}>
+      <div className="tw-pt-2 tw-pr-2" onClick={handleSearch}>
         <SearchIcon sx={{color: '#989898'}} />
       </div>
       <InputBase

@@ -11,7 +11,7 @@ import { KeyCreationContext } from "../KeyCreationContext";
 // css, constants, config, types and components
 import "../components.css"
 import MevRelayerTooltipComponent from "./MevRelayerTooltip";
-import { sortOperatorFunction } from "../utils";
+import { sortOperatorFunction, cutString } from "../utils";
 import { VERIFIED, DKG_ENABLED, SSV_EXCHANGE, VERIFIED_OPERATOR } from "../constants";
 import { LowerCaseNetwork } from "../types";
 import { OperatorRequestParams } from "../modals/SyncOperatorModal";
@@ -61,7 +61,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
             />
             <div className="tw-ml-2">
               <div className="tw-flex tw-items-center">
-                <div className="tw-mr-2">{params.row.name}</div>
+                <div className="tw-mr-2">{cutString(params.row.name, 9, 9)}</div>
                 {params.row.address_whitelist !== '' || params.row.is_private ? (
                   <Tooltip title="Private Operator">
                     <LockOutlined sx={{ height: 18, width: 18, cursor: 'pointer' }} />
