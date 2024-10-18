@@ -103,6 +103,13 @@ const VerifyMnemonic = ({
               onKeyDown={handleKeysForWord(index)}
               error={errorWithWordAtIndex(index)}
               inputRef={el => inputRefs.current[index] = el}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#cccccc",
+                  }
+                },
+              }}
             />
           </Grid>
       ))) : (

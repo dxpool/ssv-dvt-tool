@@ -68,7 +68,6 @@ const NetworkPickerModal = ({ onClose, showModal }: NetworkPickerModalParams) =>
               value={Network.MAINNET}
               control={<Radio />}
               label={Network.MAINNET}
-              disabled
               sx={{
                 '& .MuiSvgIcon-root': {
                   fontSize: 24,
