@@ -60,6 +60,7 @@ const ConfigureValidatorKeys = () => {
   const updateIndex = (e: React.ChangeEvent<HTMLInputElement>) => {
     const num = parseInt(e.target.value);
     setInputIndex(num);
+    validateIndex(num);
   };
 
   const updatePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +107,7 @@ const ConfigureValidatorKeys = () => {
       setPasswordVerifyError(false);
     }
 
-    if (inputIndex < 0) {
+    if (isNaN(inputIndex) || inputIndex < 0) {
       setInputIndexError(true);
       isError = true;
     } else {
@@ -150,6 +151,19 @@ const ConfigureValidatorKeys = () => {
 
   const handlePasswordInputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     validatePasswordOnInput(e.target.value);
+  };
+
+  const handleIndexInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const num = parseInt(e.target.value);
+    validateIndex(num);
+  };
+
+  const validateIndex = (value: number) => {
+    if (isNaN(value) || value < 0) {
+      setInputIndexError(true);
+    } else {
+      setInputIndexError(false);
+    }
   };
   
   const handleEth1WithdrawAddressInputBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
@@ -211,7 +225,7 @@ const ConfigureValidatorKeys = () => {
       <div className="tw-flex tw-flex-col tw-gap-4 tw-px-8">
         <div className="tw-mb-4 tw-text-lg">Nice! Your Secret Recovery Phrase is verified. Now let's collect some info about the keys to create:</div>
 
-        <div className="tw-w-1/2 tw-flex tw-flex-row tw-pr-2">
+        <div className={`tw-flex tw-flex-row tw-pr-2 tw-gap-4 ${usingExistingFlow ? 'tw-w-full' : 'tw-w-1/2'}`}>
           <Tooltip title={tooltips.NUMBER_OF_KEYS}>
             <TextField
               autoFocus
@@ -234,6 +248,31 @@ const ConfigureValidatorKeys = () => {
               }}
             />
           </Tooltip>
+
+          {usingExistingFlow && (
+            <Tooltip title={tooltips.STARTING_INDEX}>
+              <TextField
+                className="tw-flex-1"
+                id="index"
+                label="Amount of Existing (starting index)"
+                variant="outlined"
+                type="number"
+                value={inputIndex}
+                onChange={updateIndex}
+                onBlur={handleIndexInputBlur}
+                InputProps={{ inputProps: { min: 1, max: 1000 } }}
+                error={inputIndexError}
+                helperText={inputIndexError ? errors.STARTING_INDEX : ""}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "#ACACAC",
+                    }
+                  },
+                }}
+              />
+          </Tooltip>
+          )}
         </div>
 
         <div className="tw-w-full tw-flex tw-flex-row tw-gap-4 tw-mt-4">

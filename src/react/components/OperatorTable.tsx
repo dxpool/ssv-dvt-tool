@@ -190,7 +190,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
   // Utility function to get default selected rows
   const getDefaultSelectedRows = () => {
     const defaultOperator = operatorList
-      .filter((operator: any) => operator.name.includes('DxPool') && operator.is_active === 1 && !operator.is_private)
+      .filter((operator: any) => operator.name.includes('DxPool') && !operator.is_private)
       .reduce((minOperator: any, currentOperator: any) => {
         return currentOperator.validators_count < minOperator.validators_count ? currentOperator : minOperator;
       }, { validators_count: Infinity });
@@ -213,6 +213,13 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
   // Utility function to check if selection contains inactive operators
   const hasInactiveOperator = (selection: any[], inactiveOperators: any[]) => {
     return selection.some((id: any) => inactiveOperators.includes(id));
+  };
+
+  // Utility function to check for inactive operators, excluding the default selected one
+  const hasInactiveOperatorExcludingDefault = (selection: any[], inactiveOperators: any[], defaultSelectedRows: any[]) => {
+    return selection.some(id => 
+      inactiveOperators.includes(id) && !defaultSelectedRows.includes(id)
+    );
   };
 
   // Utility function to get operators with maximum validators count
@@ -258,8 +265,9 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
     // Get inactive operators
     const inactiveOperators = getInactiveOperators();
     // Check if the selection contains inactive operators
-    if (hasInactiveOperator(selection, inactiveOperators)) return;
-  
+    // if (hasInactiveOperator(selection, inactiveOperators)) return;
+    if (hasInactiveOperatorExcludingDefault(selection, inactiveOperators, defaultSelectedRows)) return;
+
     // Get operators with maximum validators count
     const maximumValidators = getOperatorsWithMaximumValidators();
     // Check if the selection contains operators with maximum validators count
