@@ -21,7 +21,7 @@ pip3 install pyinstaller
 
 sudo npm install -g yarn
 
-git clone https://github.com/frankye23/key-gen.git
+git clone https://github.com/dxpool/ssv-dvt-tool.git
 cd key-gen
 
 yarn install
@@ -51,7 +51,7 @@ pip3 install pyinstaller
 
 sudo corepack enable
 
-git clone https://github.com/frankye23/key-gen.git
+git clone https://github.com/dxpool/ssv-dvt-tool.git
 cd key-gen
 
 yarn install
@@ -78,7 +78,7 @@ set PATH=%APPDATA%\python\Python310\Scripts;%PATH%
 
 npm install -g yarn
 
-git clone https://github.com/frankye23/key-gen.git
+git clone https://github.com/dxpool/ssv-dvt-tool.git
 cd key-gen
 
 yarn install
@@ -108,7 +108,7 @@ brew install node
 pip3 install pyinstaller
 npm install -g yarn
 
-git clone https://github.com/frankye23/key-gen.git
+git clone https://github.com/dxpool/ssv-dvt-tool.git
 cd key-gen
 
 yarn install

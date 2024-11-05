@@ -18,6 +18,8 @@ import { accessSync, constants } from "fs";
 import path from "path";
 import { isAddress } from "web3-utils";
 import { splitKeystoreFile, getUserKeys, saveShareFile } from "./SSVUtils";
+import axios from "axios";
+import config from "../config";
 
 import {
   doesDirectoryExist,
@@ -35,6 +37,7 @@ import {
 
 const crypto = require('crypto');
 global.crypto = crypto;
+const packageJson = require('../../package.json');
 
 /**
  * VERSION and COMMITHASH are set by the git-revision-webpack-plugin module.
@@ -51,7 +54,54 @@ const doesFileExist = (filename: string): boolean => {
   }
 };
 
+const checkUpdate = async () => {
+  const res = await axios.get(`${config.baseUrl}/dvt-version`);
+  const { version, is_force_updated, dvt_version_url } = res.data;
+    
+  const isNeedUpdate = is_force_updated || compareVersions(packageJson.version, version);
+  const iconPath = path.join("static", "icon.png");
+  
+  if (isNeedUpdate) {
+    const dialogOpts: Electron.MessageBoxOptions = {
+      type: 'info',
+      buttons: is_force_updated ? ['Download and Quit'] : ['Download', 'Later'],
+      title: 'Application Update',
+      message: `A new version (${version}) is available.`,
+      detail: is_force_updated ? 'This update is required.' : 'Do you want to update now?',
+      icon: iconPath,
+    };
+
+    const { response: buttonIndex } = await dialog.showMessageBox(dialogOpts);
+
+    if (buttonIndex === 0) {
+      shell.openExternal(dvt_version_url)
+        .then(() => {
+          if (is_force_updated) {
+            setTimeout(() => app.quit(), 1000);
+          }
+        })
+        .catch(err => {
+          console.error('Failed to open URL:', err);
+        });
+    }
+  }
+}
+
+const compareVersions = (currentVersion: string, newVersion: string) => {
+  const current = currentVersion.split('.').map(Number);
+  const newer = newVersion.split('.').map(Number);
+  
+  for (let i = 0; i < 3; i++) {
+    if (newer[i] > current[i]) return true;
+    if (newer[i] < current[i]) return false;
+  }
+  
+  return false;
+}
+
 app.on("ready", () => {
+  checkUpdate();
+
   var iconPath = path.join("static", "icon.svg");
   const bundledIconPath = path.join(process.resourcesPath, "..", "static", "icon.svg");
 
