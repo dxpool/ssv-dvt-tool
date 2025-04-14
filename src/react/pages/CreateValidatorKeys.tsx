@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { Button, Typography } from "@mui/material";
 import { KeyboardArrowLeft } from "@mui/icons-material";
-import { CreateMnemonicFlow, ExistingMnemonicFlow, paths } from "../constants";
+import { CreateMnemonicFlow, ExistingMnemonicFlow, paths, ETH_TO_GWEI } from "../constants";
 import { GlobalContext } from "../GlobalContext";
 import { KeyCreationContext } from "../KeyCreationContext";
 import { NetworkTypeConfig } from "../../types.config";
@@ -24,11 +24,13 @@ type ErrorType = {
 const CreateValidatorKeys = () => {
   const {
     setFolderLocation,
+    amount,
     index,
     numberOfKeys,
     mnemonic,
     password,
     withdrawalAddress,
+    compounding,
   } = useContext(KeyCreationContext);
   const { network, nonce, setNonce } = useContext(GlobalContext);
   const history = useHistory();
@@ -70,15 +72,20 @@ const CreateValidatorKeys = () => {
     if (withdrawalAddress !== "" && !withdrawalAddress.toLowerCase().startsWith("0x")) {
       appendedWithdrawalAddress = "0x" + withdrawalAddress;
     }
+
+    // Convert user provided amount to integer representation of gwei
+    const gweiAmount = parseInt((amount * ETH_TO_GWEI).toString());
   
     try {
       const data = await window.eth2Deposit.generateKeysAndKeystore(
         mnemonic,
         index,
+        gweiAmount,
         numberOfKeys,
         network,
         password,
         appendedWithdrawalAddress,
+        compounding,
         selectedFolder
       );
   

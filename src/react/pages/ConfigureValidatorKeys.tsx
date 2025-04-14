@@ -1,4 +1,4 @@
-import { Button, TextField, Tooltip, Typography, InputAdornment, IconButton } from "@mui/material";
+import { Button, TextField, Tooltip, Typography, InputAdornment, IconButton, FormControlLabel, Checkbox } from "@mui/material";
 import { Visibility, VisibilityOff, KeyboardArrowLeft } from "@mui/icons-material";
 import { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -21,10 +21,14 @@ const ConfigureValidatorKeys = () => {
     setIndex,
     numberOfKeys,
     setNumberOfKeys,
+    amount,
+    setAmount,
     password,
     setPassword,
     withdrawalAddress,
     setWithdrawalAddress,
+    compounding,
+    setCompounding,
   } = useContext(KeyCreationContext);
   const history = useHistory();
   const usingExistingFlow = history.location.pathname === paths.CONFIGURE_EXISTING;
@@ -39,12 +43,17 @@ const ConfigureValidatorKeys = () => {
   const [inputIndex, setInputIndex] = useState(index);
   const [inputIndexError, setInputIndexError] = useState(false);
 
+  const [inputAmount, setInputAmount] = useState(amount);
+  const [inputAmountError, setInputAmountError] = useState(false);
+
   const [inputPassword, setInputPassword] = useState(password);
   const [inputPasswordStrengthError, setInputPasswordStrengthError] = useState(false);
 
   const [inputWithdrawalAddress, setInputWithdrawalAddress] = useState(withdrawalAddress);
   const [inputWithdrawalAddressStrengthError, setInputWithdrawalAddressStrengthError] = useState(false);
   const [inputWithdrawalAddressFormatError, setInputWithdrawalAddressFormatError] = useState(false);
+
+  const [inputCompounding, setInputCompounding] = useState(compounding);
 
   useEffect(() => {
     if (!mnemonic) {
@@ -63,6 +72,18 @@ const ConfigureValidatorKeys = () => {
     validateIndex(num);
   };
 
+  const updateAmount = ({ target: { value }}: React.FocusEvent<HTMLInputElement>) => {
+    let trimmedValue = value;
+    const splitValue = value.split('.');
+    if (splitValue.length > 1) {
+      // Keep precision to 1 Gwei
+      trimmedValue = `${splitValue[0]}.${splitValue[1].substring(0, 9)}`;
+    }
+
+    const num = parseFloat(trimmedValue);
+    setInputAmount(num);
+  };
+
   const updatePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputPassword(e.target.value);
   };
@@ -75,9 +96,21 @@ const ConfigureValidatorKeys = () => {
     setShowPassword(!showPassword);
   };
 
-  const updateEth1WithdrawAddress = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const updateEth1WithdrawAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value.trim();
     setInputWithdrawalAddress(address);
+    if (!address) {
+      setInputCompounding(false);
+      setInputAmount(32);
+    }
+  };
+  
+  const updateCompounding = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.checked) {
+      setInputAmount(32);
+    }
+
+    setInputCompounding(e.target.checked);
   };
 
   /**
@@ -105,6 +138,13 @@ const ConfigureValidatorKeys = () => {
       isError = true;
     } else {
       setPasswordVerifyError(false);
+    }
+
+    if (inputAmount < 1 || inputAmount > 2048) {
+      setInputAmountError(true);
+      isError = true;
+    } else {
+      setInputAmountError(false);
     }
 
     if (isNaN(inputIndex) || inputIndex < 0) {
@@ -192,12 +232,31 @@ const ConfigureValidatorKeys = () => {
     }
   };
 
+  const checkPassword = () => {
+    if (inputPassword.localeCompare(passwordToVerify) == 0) {
+      setPasswordVerifyError(false);
+
+      // Set context
+      setIndex(inputIndex);
+      setNumberOfKeys(inputNumberOfKeys);
+      setAmount(inputAmount);
+      setPassword(inputPassword);
+      setWithdrawalAddress(inputWithdrawalAddress);
+      setCompounding(inputCompounding)
+
+      history.push(usingExistingFlow ? paths.CREATE_KEYS_EXISTING : paths.CREATE_KEYS_CREATE);
+    } else {
+      setPasswordVerifyError(true);
+    }
+  };
+
   const onBackClick = () => {
     // Reset context
     setIndex(0);
     setNumberOfKeys(1);
     setWithdrawalAddress("");
     setPassword("");
+    setCompounding(false);
 
     // Reset form
     setInputNumberOfKeys(1);
@@ -205,6 +264,7 @@ const ConfigureValidatorKeys = () => {
     setInputWithdrawalAddress("");
     setInputPassword("");
     setPasswordToVerify("");
+    setInputCompounding(false);
     history.goBack();
   };
 
@@ -368,6 +428,34 @@ const ConfigureValidatorKeys = () => {
                 }
               },
             }}
+          />
+        </Tooltip>
+
+        <Tooltip title={tooltips.COMPOUNDING}>
+          <FormControlLabel
+            label="Compounding Credentials (0x02) - Must set a valid Withdrawal Address"
+            control={
+              <Checkbox
+                checked={inputCompounding}
+                disabled={!inputWithdrawalAddress}
+                onChange={updateCompounding}
+              />
+            }
+          />
+        </Tooltip>
+
+        <Tooltip title={tooltips.AMOUNT}>
+          <TextField
+            className="tw-flex-1"
+            disabled={!inputCompounding}
+            id="amount"
+            label="Deposit Amount"
+            type="number"
+            variant="outlined"
+            value={inputAmount}
+            onChange={updateAmount}
+            error={inputAmountError}
+            helperText={inputAmountError ? errors.DEPOSIT_AMOUNT : ""}
           />
         </Tooltip>
       </div>
