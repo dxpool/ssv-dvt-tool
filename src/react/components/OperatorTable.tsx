@@ -84,7 +84,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
       renderCell: (params: GridCellParams) => (
         <div className="tw-flex tw-items-center">
           <div className="tw-mr-2">{params.row.validators_count}</div>
-          {params.row.validators_count + numberOfKeys >= 500 && params.row.network === LowerCaseNetwork.MAINNET || params.row.validators_count + numberOfKeys >= 560 && params.row.network === LowerCaseNetwork.HOLESKY ? (
+          {params.row.validators_count + numberOfKeys >= 500 && params.row.network === LowerCaseNetwork.MAINNET || params.row.validators_count + numberOfKeys >= 560 && params.row.network === LowerCaseNetwork.HOODI ? (
             <Tooltip title="Operator reached maximum amount of validators">
               <InfoOutlined sx={{height: 18, width: 18, cursor: 'pointer'}} />
             </Tooltip>
@@ -227,7 +227,7 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
     return operators
       .filter((row: any) => 
         (row.validators_count + numberOfKeys >= 500 && row.network === LowerCaseNetwork.MAINNET) ||
-        (row.validators_count + numberOfKeys >= 560 && row.network === LowerCaseNetwork.HOLESKY)
+        (row.validators_count + numberOfKeys >= 560 && row.network === LowerCaseNetwork.HOODI)
       )
       .map((row: any) => row.id);
   };

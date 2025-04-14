@@ -58,7 +58,9 @@ export const handleOperatorRequest = async (
     const params = {
       network_type: network.toLowerCase()
     }
+    console.log('params', params);
     const response = await getOperatorList(params);
+    console.log('response', response);
     const data = response.data.items;
 
     const nextNonce = await getNonce(network.toLowerCase(), ownerAddress);

@@ -22,11 +22,11 @@ interface OperatorMeta {
 }
 
 export const GlobalContext = createContext<GlobalContextType>({
-  network: Network.HOLESKY,
+  network: Network.HOODI,
   setNetwork: () => {},
   operatorList: [],
   setOperatorList: () => {},
-  operatorMeta: {network: Network.HOLESKY, expiration: 0},
+  operatorMeta: {network: Network.HOODI, expiration: 0},
   setOperatorMeta: () => {},
   nonce: 0,
   setNonce: () => {},
@@ -37,10 +37,10 @@ export const GlobalContext = createContext<GlobalContextType>({
  */
 const GlobalContextWrapper = ({ children }: { children: React.ReactNode}) => {
   const history = useHistory();
-  const [network, setNetwork] = useState<Network>(Network.HOLESKY);
+  const [network, setNetwork] = useState<Network>(Network.HOODI);
   const [operatorList, setOperatorList] = useState<any>([]);
   const [nonce, setNonce] = useState<number>(0);
-  const [operatorMeta, setOperatorMeta] = useState<OperatorMeta>({ network: Network.HOLESKY, expiration: 0 });
+  const [operatorMeta, setOperatorMeta] = useState<OperatorMeta>({ network: Network.HOODI, expiration: 0 });
   const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ const GlobalContextWrapper = ({ children }: { children: React.ReactNode}) => {
 
   const goHome = () => {
     setIsExpired(false);
-    setOperatorMeta({ network: Network.HOLESKY, expiration: 0 });
+    setOperatorMeta({ network: Network.HOODI, expiration: 0 });
     history.push("/");
   }
 

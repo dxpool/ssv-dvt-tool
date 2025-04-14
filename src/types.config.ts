@@ -25,6 +25,7 @@ export interface NetworkConfig {
 export interface NetworkTypeConfig {
   holesky: NetworkConfig;
   mainnet: NetworkConfig;
+  hoodi: NetworkConfig;
 }
 
 export interface Config {

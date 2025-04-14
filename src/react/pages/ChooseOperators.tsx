@@ -83,8 +83,8 @@ const ChooseOperators = () => {
 
     setTotalFee(total);
 
-    // Check if any of the selected operators have reached their maximum validator capacity, mainnet is 500 and holesky is 560
-    const isMaximumValidator = operatorArray.some(operator => operator.validators_count > 500 && networkKey === LowerCaseNetwork.MAINNET || operator.validators_count > 560 && networkKey === LowerCaseNetwork.HOLESKY);
+    // Check if any of the selected operators have reached their maximum validator capacity, mainnet is 500 and holesky/hoodi is 560
+    const isMaximumValidator = operatorArray.some(operator => operator.validators_count > 500 && networkKey === LowerCaseNetwork.MAINNET || operator.validators_count > 560 && networkKey === LowerCaseNetwork.HOODI);
     setIsMaximumValidator(isMaximumValidator);
 
     // Check if any of the selected operators are unverified

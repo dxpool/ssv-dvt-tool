@@ -17,10 +17,12 @@ export enum ReuseMnemonicAction {
 
 export enum Network {
   MAINNET = "Mainnet",
-  HOLESKY = "Holesky"
+  HOLESKY = "Holesky",
+  HOODI = "Hoodi",
 }
 
 export enum LowerCaseNetwork {
   MAINNET = "mainnet",
-  HOLESKY = "holesky"
+  HOLESKY = "holesky",
+  HOODI = "hoodi",
 }

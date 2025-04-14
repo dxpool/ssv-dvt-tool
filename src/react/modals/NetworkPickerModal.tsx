@@ -21,7 +21,7 @@ interface NetworkPickerModalParams {
  */
 const NetworkPickerModal = ({ onClose, showModal }: NetworkPickerModalParams) => {
   const { network, setNetwork } = useContext(GlobalContext);
-  const [formNetwork, setFormNetwork] = useState<Network>(Network.HOLESKY);
+  const [formNetwork, setFormNetwork] = useState<Network>(Network.HOODI);
 
   useEffect(() => {
     if (network) {
@@ -86,9 +86,9 @@ const NetworkPickerModal = ({ onClose, showModal }: NetworkPickerModalParams) =>
               }}
             />
             <FormControlLabel
-              value={Network.HOLESKY}
+              value={Network.HOODI}
               control={<Radio />}
-              label={Network.HOLESKY + ' (Testnet)'}
+              label={Network.HOODI + ' (Testnet)'}
               sx={{
                 '& .MuiSvgIcon-root': {
                   fontSize: 24,
@@ -101,7 +101,7 @@ const NetworkPickerModal = ({ onClose, showModal }: NetworkPickerModalParams) =>
                 marginTop: '0.5rem',
               }}
             />
-          </RadioGroup> 
+          </RadioGroup>
 
           <div className="tw-flex tw-justify-center tw-mt-4">
             <Button className="tw-w-[100px] tw-h-9 tw-rounded-md" color="primary" onClick={onSubmit} variant="contained" tabIndex={1}>
