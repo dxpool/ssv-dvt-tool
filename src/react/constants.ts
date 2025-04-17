@@ -41,7 +41,7 @@ export const errors = {
 export const tooltips = {
 	IMPORT_MNEMONIC: "If you've already created a Secret Recovery Phrase, you can use it to regenerate your original keys, create more keys, or generate a BLS to execution change by importing the phrase here.",
 	NUMBER_OF_KEYS: "Enter how many new validator keys you'd like to create.",
-  AMOUNT: "Enter the amount you would like to deposit for each validator. This value must be between 1 and 2048 and can not have greater precision than 1 gwei. You must have withdrawal credentials defined and set \"compounding\".",
+  AMOUNT: "Enter the amount you would like to deposit for each validator. This value must be between 1 and 2048 and can not have greater precision than 1 gwei. You must have withdrawal credentials defined.",
 	PASSWORD: "Pick a strong password (at least 12 characters) that will be used to protect your keys.",
 	STARTING_INDEX: "Each key is created sequentially, so we need to know how many you've created with this Secret Recovery Phrase in the past in order to create some new ones for you.",
 	ETH1_WITHDRAW_ADDRESS: "An required Ethereum address for the withdrawal credentials.",

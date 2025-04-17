@@ -34,7 +34,7 @@ export const KeyCreationContext = createContext<KeyCreationContextType>({
   setPassword: () => {},
   withdrawalAddress: "",
   setWithdrawalAddress: () => {},
-  compounding: false,
+  compounding: true,
   setCompounding: () => {},
 });
 
@@ -49,7 +49,7 @@ const KeyCreationContextWrapper = ({ children }: { children: React.ReactNode}) =
   const [amount, setAmount] = useState<number>(32);
   const [password, setPassword] = useState<string>("");
   const [withdrawalAddress, setWithdrawalAddress] = useState<string>("");
-  const [compounding, setCompounding] = useState<boolean>(false);
+  const [compounding, setCompounding] = useState<boolean>(true);
 
   return (
     <KeyCreationContext.Provider value={{

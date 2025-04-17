@@ -52,8 +52,9 @@ const ConfigureValidatorKeys = () => {
   const [inputWithdrawalAddress, setInputWithdrawalAddress] = useState(withdrawalAddress);
   const [inputWithdrawalAddressStrengthError, setInputWithdrawalAddressStrengthError] = useState(false);
   const [inputWithdrawalAddressFormatError, setInputWithdrawalAddressFormatError] = useState(false);
-
+  // set compounding to true by default, user will not be able to uncheck it
   const [inputCompounding, setInputCompounding] = useState(compounding);
+  
 
   useEffect(() => {
     if (!mnemonic) {
@@ -84,6 +85,19 @@ const ConfigureValidatorKeys = () => {
     setInputAmount(num);
   };
 
+  const handleAmountInputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const num = parseInt(e.target.value);
+    validateAmount(num);
+  }
+
+  const validateAmount = (value: number) => {
+    if (isNaN(value) || value < 1 || value > 2048) {
+      setInputAmountError(true);
+    } else {
+      setInputAmountError(false);
+    }
+  }
+
   const updatePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputPassword(e.target.value);
   };
@@ -100,18 +114,18 @@ const ConfigureValidatorKeys = () => {
     const address = e.target.value.trim();
     setInputWithdrawalAddress(address);
     if (!address) {
-      setInputCompounding(false);
+      // setInputCompounding(false);
       setInputAmount(32);
     }
   };
   
-  const updateCompounding = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.checked) {
-      setInputAmount(32);
-    }
+  // const updateCompounding = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (!e.target.checked) {
+  //     setInputAmount(32);
+  //   }
 
-    setInputCompounding(e.target.checked);
-  };
+  //   setInputCompounding(e.target.checked);
+  // };
 
   /**
    * Validates each value simultaneously and if there are no errors will move to the next step
@@ -175,6 +189,8 @@ const ConfigureValidatorKeys = () => {
       setNumberOfKeys(inputNumberOfKeys);
       setPassword(inputPassword);
       setWithdrawalAddress(inputWithdrawalAddress);
+      setCompounding(inputCompounding);
+      setAmount(inputAmount);
 
       const path = usingExistingFlow ? paths.CHOOSE_OPERATOR_EXISTING : paths.CHOOSE_OPERATOR;
       history.push(path);
@@ -232,39 +248,23 @@ const ConfigureValidatorKeys = () => {
     }
   };
 
-  const checkPassword = () => {
-    if (inputPassword.localeCompare(passwordToVerify) == 0) {
-      setPasswordVerifyError(false);
-
-      // Set context
-      setIndex(inputIndex);
-      setNumberOfKeys(inputNumberOfKeys);
-      setAmount(inputAmount);
-      setPassword(inputPassword);
-      setWithdrawalAddress(inputWithdrawalAddress);
-      setCompounding(inputCompounding)
-
-      history.push(usingExistingFlow ? paths.CREATE_KEYS_EXISTING : paths.CREATE_KEYS_CREATE);
-    } else {
-      setPasswordVerifyError(true);
-    }
-  };
-
   const onBackClick = () => {
     // Reset context
     setIndex(0);
     setNumberOfKeys(1);
     setWithdrawalAddress("");
     setPassword("");
-    setCompounding(false);
+    // setCompounding(false);
+    setAmount(32);
 
     // Reset form
     setInputNumberOfKeys(1);
     setInputIndex(0);
+    setInputAmount(32);
     setInputWithdrawalAddress("");
     setInputPassword("");
     setPasswordToVerify("");
-    setInputCompounding(false);
+    // setInputCompounding(false);
     history.goBack();
   };
 
@@ -286,7 +286,7 @@ const ConfigureValidatorKeys = () => {
         <div className="tw-mb-4 tw-text-lg">Nice! Your Secret Recovery Phrase is verified. Now let's collect some info about the keys to create:</div>
 
         <div className={`tw-flex tw-flex-row tw-pr-2 tw-gap-4 ${usingExistingFlow ? 'tw-w-full' : 'tw-w-1/2'}`}>
-          <Tooltip title={tooltips.NUMBER_OF_KEYS}>
+          {/* <Tooltip title={tooltips.NUMBER_OF_KEYS}>
             <TextField
               autoFocus
               className="tw-flex-1"
@@ -307,7 +307,7 @@ const ConfigureValidatorKeys = () => {
                 },
               }}
             />
-          </Tooltip>
+          </Tooltip> */}
 
           {usingExistingFlow && (
             <Tooltip title={tooltips.STARTING_INDEX}>
@@ -431,7 +431,7 @@ const ConfigureValidatorKeys = () => {
           />
         </Tooltip>
 
-        <Tooltip title={tooltips.COMPOUNDING}>
+        {/* <Tooltip className="tw-mt-2" title={tooltips.COMPOUNDING}>
           <FormControlLabel
             label="Compounding Credentials (0x02) - Must set a valid Withdrawal Address"
             control={
@@ -439,23 +439,55 @@ const ConfigureValidatorKeys = () => {
                 checked={inputCompounding}
                 disabled={!inputWithdrawalAddress}
                 onChange={updateCompounding}
+                sx={{
+                  color: "#ACACAC !important",
+                  "&.Mui-checked": {
+                    color: "#ACACAC !important",
+                  },
+                  "&.Mui-disabled": {
+                    color: "#ACACAC !important",
+                  },
+                }}
               />
             }
+            sx={{
+              color: "#ACACAC !important",
+              "& .MuiFormControlLabel-label": {
+                color: "#ACACAC !important",
+                fontSize: "1rem"
+              },
+            }}
           />
-        </Tooltip>
+        </Tooltip> */}
 
         <Tooltip title={tooltips.AMOUNT}>
           <TextField
-            className="tw-flex-1"
-            disabled={!inputCompounding}
+            className="tw-flex-1 tw-mt-4"
+            // disabled={!inputCompounding}
             id="amount"
             label="Deposit Amount"
             type="number"
             variant="outlined"
             value={inputAmount}
             onChange={updateAmount}
+            onBlur={handleAmountInputOnBlur}
             error={inputAmountError}
             helperText={inputAmountError ? errors.DEPOSIT_AMOUNT : ""}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#ACACAC",
+                },
+                "&.Mui-disabled fieldset": {
+                  borderColor: "#ACACAC !important",
+                },
+              },
+              "& .MuiInputLabel-root": {
+                "&.Mui-disabled": {
+                  color: "#ACACAC !important",
+                },
+              },
+            }}
           />
         </Tooltip>
       </div>

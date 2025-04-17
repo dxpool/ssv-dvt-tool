@@ -5,6 +5,8 @@ on:
   push:
     tags:
       - v*
+    branches:
+      - develop
 
 jobs:
   build-binaries:

@@ -2,11 +2,11 @@ import { forwardRef, Ref, SVGAttributes, useEffect, useState } from "react";
 
 export const HomePageImage = forwardRef(
   (props: SVGAttributes<SVGSVGElement>, ref: Ref<SVGSVGElement>) => {
-    const [svgHeight, setSvgHeight] = useState(window.innerHeight > 780 ? 600 : 280);
+    const [svgHeight, setSvgHeight] = useState(window.innerHeight > 850 ? 600 : 280);
 
     useEffect(() => {
       const handleResize = () => {
-        setSvgHeight(window.innerHeight > 780 ? 600 : 280);
+        setSvgHeight(window.innerHeight > 850 ? 600 : 280);
       };
 
       window.addEventListener('resize', handleResize);
