@@ -91,7 +91,7 @@ const ConfigureValidatorKeys = () => {
   }
 
   const validateAmount = (value: number) => {
-    if (isNaN(value) || value < 1 || value > 2048) {
+    if (isNaN(value) || value < 32 || value > 2048) {
       setInputAmountError(true);
     } else {
       setInputAmountError(false);
@@ -154,7 +154,7 @@ const ConfigureValidatorKeys = () => {
       setPasswordVerifyError(false);
     }
 
-    if (inputAmount < 1 || inputAmount > 2048) {
+    if (inputAmount < 32 || inputAmount > 2048) {
       setInputAmountError(true);
       isError = true;
     } else {
