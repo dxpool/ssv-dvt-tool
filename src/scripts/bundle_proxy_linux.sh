@@ -31,7 +31,6 @@ python3 -m pip install -r $ETH2REQUIREMENTSPATH --target $TARGETPACKAGESPATH
 # Bundling Python stakingdeposit_proxy
 PYTHONPATH=$PYTHONPATH pyinstaller \
     --distpath $DISTBINPATH \
-    
     $SCRIPTPATH/stakingdeposit_proxy.spec
 
 # Adding word list
