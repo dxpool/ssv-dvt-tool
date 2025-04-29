@@ -22,6 +22,31 @@ jobs:
         python-version: ["3.12"]
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Generate config file
+        run: |
+          cat > src/config.ts << 'EOF'
+          import { Config } from "./types.config";
+          
+          export default <Config>{
+            network: {
+              mainnet: {
+                nodeUrl: "${{ secrets.MAINNET_NODE_URL }}",
+                network: "mainnet",
+                ownerAddress: "${{ secrets.MAINNET_OWNER_ADDRESS }}",
+              },
+              hoodi: {
+                nodeUrl: "",
+                network: "hoodi",
+                ownerAddress: "${{ secrets.HOODI_OWNER_ADDRESS }}",
+              },
+            },
+            externalLink: "${{ secrets.EXTERNAL_LINK }}",
+            baseUrl: "${{ secrets.BASE_URL }}"
+          };
+          EOF
+        shell: bash
+        
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

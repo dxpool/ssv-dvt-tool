@@ -73,23 +73,18 @@ const ConfigureValidatorKeys = () => {
     validateIndex(num);
   };
 
-  const updateAmount = ({ target: { value }}: React.FocusEvent<HTMLInputElement>) => {
-    let trimmedValue = value;
-    const splitValue = value.split('.');
-    if (splitValue.length > 1) {
-      // Keep precision to 1 Gwei
-      trimmedValue = `${splitValue[0]}.${splitValue[1].substring(0, 9)}`;
-    }
-
-    const num = parseFloat(trimmedValue);
+  const updateAmount = ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
+    // only allow numbers
+    const numericValue = value.replace(/[^0-9]/g, '');
+    const num = numericValue ? parseInt(numericValue, 10) : 0;
     setInputAmount(num);
   };
 
   const handleAmountInputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const num = parseInt(e.target.value);
+    const num = parseInt(e.target.value, 10) || 0;
     validateAmount(num);
-  }
-
+  };
+  
   const validateAmount = (value: number) => {
     if (isNaN(value) || value < 32 || value > 2048) {
       setInputAmountError(true);
@@ -466,7 +461,7 @@ const ConfigureValidatorKeys = () => {
             // disabled={!inputCompounding}
             id="amount"
             label="Deposit Amount"
-            type="number"
+            type="text"
             variant="outlined"
             value={inputAmount}
             onChange={updateAmount}

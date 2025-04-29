@@ -19,11 +19,9 @@ export interface NetworkConfig {
   nodeUrl: string;
   network: string;
   ownerAddress: string;
-  defaultOperator: Operator[];
 }
 
 export interface NetworkTypeConfig {
-  holesky: NetworkConfig;
   mainnet: NetworkConfig;
   hoodi: NetworkConfig;
 }
