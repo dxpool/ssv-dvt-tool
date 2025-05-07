@@ -1,5 +1,5 @@
 # DxPool Key Gen
-DxPool Key Gen is a GUI application providing functionality to the [staking-deposit-cli](https://github.com/ethereum/staking-deposit-cli). It is a React app running in Electron.  See `src/electron/` for the simple electron app and `src/react/` for where the magic happens.
+DxPool Key Gen is a GUI application providing functionality to the [ethstaker-deposit-cli. ](https://github.com/eth-educators/ethstaker-deposit-cli). It is a React app running in Electron.  See `src/electron/` for the simple electron app and `src/react/` for where the magic happens.
 
 ## Environment Configuration & Dependencies
 Prior to running Dxpool Key Gen a few dependencies need to be installed. 

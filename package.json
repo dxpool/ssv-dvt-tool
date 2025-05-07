@@ -1,7 +1,7 @@
 {
   "name": "dxpool-keygen",
   "productName": "DxPool Key Gen",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "GUI key generation tool wrapping the deposit cli.",
   "main": "./build/electron/index.js",
   "author": "Stake DxPool <stake.dxpool.com>",
