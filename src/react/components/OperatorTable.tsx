@@ -116,15 +116,18 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
     {
       minWidth: 140,
       headerName: 'Yearly Fee',
-      field: 'fee',
+      field: 'eth_fee',
       type: 'number',
       align: 'left',
       headerAlign: 'left',
-      renderCell: (params: GridCellParams) => (
-        <div>
-          {(Number(params.row.fee) / SSV_EXCHANGE).toFixed(2)} SSV
-        </div>
-      ),
+      renderCell: (params: GridCellParams) => {
+        const ethFee = Number(params.row.eth_fee) / SSV_EXCHANGE;
+        return (
+          <div>
+            {ethFee === 0 ? '0' : ethFee.toFixed(4)} ETH
+          </div>
+        );
+      },
     },
     {
       minWidth: 180,

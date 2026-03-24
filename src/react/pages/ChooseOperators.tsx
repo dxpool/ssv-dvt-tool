@@ -76,9 +76,10 @@ const ChooseOperators = () => {
     
     // calculate total fee
     const total = operatorArray.reduce((accumulator, operator) => {
-      const feeNumber = parseFloat(operator.fee);
-      const ssvValue = (feeNumber / SSV_EXCHANGE).toFixed(2);
-      return accumulator + parseFloat(ssvValue);
+      const feeNumber = parseFloat(operator.eth_fee);
+      const ethFee = feeNumber / SSV_EXCHANGE;
+      const ethValue = ethFee === 0 ? 0 : parseFloat(ethFee.toFixed(4));
+      return accumulator + ethValue;
     }, 0);
 
     setTotalFee(total);
@@ -295,7 +296,7 @@ const ChooseOperators = () => {
                     <div className="tw-col-span-9">
                       <div className="tw-text-lg tw-font-semibold tw-text-primary">{operator.name}</div>
                       <div className="tw-text-gray tw-font-semibold">ID: {operator.id}</div>
-                      <div className="tw-mt-4 tw-font-bold tw-text-primary">{(Number(operator.fee) / SSV_EXCHANGE).toFixed(2)} SSV</div>
+                      <div className="tw-mt-4 tw-font-bold tw-text-primary">{(() => { const v = Number(operator.eth_fee) / SSV_EXCHANGE; return v === 0 ? '0' : v.toFixed(4); })()} ETH</div>
                     </div>
                     <div className="tw-col-span-1 tw-flex-col tw-flex tw-justify-between tw-items-center">
                       <div>
@@ -345,7 +346,7 @@ const ChooseOperators = () => {
               </YearlyFeeTooltip>
             </div>
 
-            <div className="tw-font-bold">{totalFee.toFixed(2)} SSV</div>
+            <div className="tw-font-bold">{totalFee === 0 ? '0' : totalFee.toFixed(4)} ETH</div>
           </div>
 
           {/* exceeded validator warning */}
