@@ -10,12 +10,12 @@ import { Button, Divider, Tooltip, TooltipProps, tooltipClasses, Menu, Avatar, I
 // material icons
 import { FilterAltOutlined, Lock, Remove, ErrorOutline, KeyboardArrowLeft } from "@mui/icons-material";
 // constants, css files, config files
-import { DEFAULT_CLUSTER_SIZE, FILTER_OPTION, CreateMnemonicFlow, ExistingMnemonicFlow, paths, SSV_EXCHANGE, VERIFIED_OPERATOR } from "../constants";
+import { DEFAULT_CLUSTER_SIZE, FILTER_OPTION, CreateMnemonicFlow, ExistingMnemonicFlow, paths, SSV_EXCHANGE, VERIFIED_OPERATOR, ANNUAL_BLOCKS, WEI_PER_ETH } from "../constants";
 import { NetworkTypeConfig } from "../../types.config";
 import { LowerCaseNetwork } from "../types";
 import { GlobalContext } from "../GlobalContext";
 import { KeyCreationContext } from "../KeyCreationContext";
-import { getOperatorFeeSubtotal } from "../utils";
+
 import "../components.css"
 
 type ClusterSizeOption = {
@@ -33,7 +33,7 @@ const ChooseOperators = () => {
   const usingExistingFlow = history.location.pathname === paths.CHOOSE_OPERATOR_EXISTING;
 
   const { network, operatorList } = useContext(GlobalContext);
-  const { amount, withdrawalAddress, numberOfKeys } = useContext(KeyCreationContext);
+  const { amount } = useContext(KeyCreationContext);
   const networkKey = network.toLowerCase() as keyof NetworkTypeConfig;
 
   const defaultOperatorCandidates = operatorList.filter(
@@ -52,7 +52,7 @@ const ChooseOperators = () => {
   const [selectedOperators, setSelectedOperators] = useState(
     defaultOperator ? { [defaultOperator.id]: defaultOperator } : {}
   );
-  const [totalFee, setTotalFee] = useState(0);
+  const totalFee = Object.values(selectedOperators).reduce((sum: number, operator: any) => sum + Number(operator.eth_fee), 0) / WEI_PER_ETH * ANNUAL_BLOCKS / 32 * amount
   const [isMaximumValidator, setIsMaximumValidator] = useState(false);
   const [isUnVerifiedSelected, setIsUnVerifiedSelected] = useState(false);
   const [clusterSizeOptions, setClusterSizeOptions] = useState<ClusterSizeOption[]>([
@@ -93,45 +93,6 @@ const ChooseOperators = () => {
     const isUnVerifiedSelected = operatorArray.some(operator => operator.type != VERIFIED_OPERATOR);
     setIsUnVerifiedSelected(isUnVerifiedSelected);
   }, [selectedOperators]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const fetchTotalFee = async () => {
-      const selectedOperatorIds = Object.keys(selectedOperators).map(Number);
-      const isClusterComplete = selectedOperatorIds.length === selectedClusterSize;
-
-      if (!isClusterComplete || !withdrawalAddress) {
-        setTotalFee(0);
-        return;
-      }
-
-      try {
-        const subtotal = await getOperatorFeeSubtotal({
-          network: network.toLowerCase(),
-          operatorIds: selectedOperatorIds,
-          numValidators: numberOfKeys,
-          address: withdrawalAddress,
-          effectiveBalance: amount,
-        });
-
-        if (mounted) {
-          const fee = Number(subtotal);
-          setTotalFee(Number.isFinite(fee) ? fee : 0);
-        }
-      } catch {
-        if (mounted) {
-          setTotalFee(0);
-        }
-      }
-    };
-
-    fetchTotalFee();
-
-    return () => {
-      mounted = false;
-    };
-  }, [selectedOperators, selectedClusterSize, network, withdrawalAddress, amount, numberOfKeys]);
 
   useEffect(() => {
     // ensure the selected operators are updated when the search value changes
@@ -373,7 +334,7 @@ const ChooseOperators = () => {
 
           <Divider />
           
-          {Object.keys(selectedOperators).length === selectedClusterSize && (
+          {Object.keys(selectedOperators).length > 0 && (
             <div className="tw-flex tw-justify-between tw-items-center tw-text-base tw-mr-4 tw-mt-6">
               <div className="tw-font-medium tw-flex tw-items-center">
                 <div className="tw-mr-2">Operators Yearly Fee</div>

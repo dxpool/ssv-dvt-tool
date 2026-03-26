@@ -10,6 +10,7 @@ import aestusImage from '../assets/images/aestus.svg';
 export const MNEMONIC_ERROR_SEARCH = "That is not a valid mnemonic";
 export const VALID_MNEMONIC_LENGTHS = [12, 15, 18, 21, 24];
 export const ETH_TO_GWEI = 10 ** 9;
+export const WEI_PER_ETH = 10 ** 18;
 
 export const errors = {
 	MNEMONIC_LENGTH_ERROR: `The Secret Recovery Phrase must be ${VALID_MNEMONIC_LENGTHS.slice(0, -1).join(", ")}, or ${VALID_MNEMONIC_LENGTHS.slice(-1)} words in length. Please verify each word and try again.`,
@@ -115,5 +116,7 @@ export const EXPIRATION_CHECK_TIME = 60 * 1000; // 1 minute
 export const INTERVAL_TIME = 800 // 800ms
 
 export const SSV_EXCHANGE = 382640000000
+
+export const ANNUAL_BLOCKS = 2613400 // total blocks per year
 
 export const VERIFIED_OPERATOR = 'verified_operator';
