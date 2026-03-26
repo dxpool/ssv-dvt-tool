@@ -193,12 +193,12 @@ export default function operatorTable({ onOperatorSelection, selectedClusterSize
   // Utility function to get default selected rows
   const getDefaultSelectedRows = () => {
     const defaultOperator = operatorList
-      .filter((operator: any) => operator.name.includes('DxPool') && !operator.is_private)
+      .filter((operator: any) => operator.name.includes('DxPool') && !operator.is_private && operator.is_active !== 0)
       .reduce((minOperator: any, currentOperator: any) => {
-        return currentOperator.validators_count < minOperator.validators_count ? currentOperator : minOperator;
-      }, { validators_count: Infinity });
-  
-    return defaultOperator.validators_count !== Infinity ? [defaultOperator.id] : [];
+        return !minOperator || currentOperator.validators_count < minOperator.validators_count ? currentOperator : minOperator;
+      }, null as any);
+
+    return defaultOperator ? [defaultOperator.id] : [];
   };
 
   // Utility function to check if default selected rows are unselected

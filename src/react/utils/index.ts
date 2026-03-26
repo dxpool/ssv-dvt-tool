@@ -1,6 +1,6 @@
 import { INTERVAL_TIME } from '../constants';
 import { preloadAndCacheImages } from '../utils/imageCache';
-import { getOperatorList, getAddressNonce } from "../../api"
+import { getOperatorList, getAddressNonce, getOperatorFee } from "../../api"
 
 /**
  * get address nonce using api
@@ -19,6 +19,33 @@ export const getNonce = async (network: string, ownerAddress: string): Promise<n
   const res = await getAddressNonce(params);
 
   return res.data.nonce;
+};
+
+type OperatorFeeSubtotalParams = {
+  network: string;
+  operatorIds: number[];
+  numValidators: number;
+  address: string;
+  effectiveBalance: number;
+};
+
+export const getOperatorFeeSubtotal = async ({
+  network,
+  operatorIds,
+  numValidators,
+  address,
+  effectiveBalance,
+}: OperatorFeeSubtotalParams) => {
+  const params = {
+    network_type: network,
+    operator_ids: JSON.stringify(operatorIds),
+    num_validators: numValidators,
+    address,
+    effective_balance: effectiveBalance,
+  };
+
+  const res = await getOperatorFee(params);
+  return res.data.total_operator_fee_subtotal;
 };
 
 export function sortOperatorFunction(a: any, b: any) {

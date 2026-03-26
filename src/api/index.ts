@@ -15,3 +15,11 @@ export function getAddressNonce(params: any) {
     params
   })
 }
+
+export function getOperatorFee(params: any) {
+  return axios({
+    url: '/validators/ssv-info',
+    method: 'get',
+    params
+  })
+}

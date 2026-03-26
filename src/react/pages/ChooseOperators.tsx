@@ -14,6 +14,8 @@ import { DEFAULT_CLUSTER_SIZE, FILTER_OPTION, CreateMnemonicFlow, ExistingMnemon
 import { NetworkTypeConfig } from "../../types.config";
 import { LowerCaseNetwork } from "../types";
 import { GlobalContext } from "../GlobalContext";
+import { KeyCreationContext } from "../KeyCreationContext";
+import { getOperatorFeeSubtotal } from "../utils";
 import "../components.css"
 
 type ClusterSizeOption = {
@@ -31,16 +33,25 @@ const ChooseOperators = () => {
   const usingExistingFlow = history.location.pathname === paths.CHOOSE_OPERATOR_EXISTING;
 
   const { network, operatorList } = useContext(GlobalContext);
+  const { amount, withdrawalAddress, numberOfKeys } = useContext(KeyCreationContext);
   const networkKey = network.toLowerCase() as keyof NetworkTypeConfig;
 
-  const defaultOperator = operatorList
-  .filter((operator: any) => operator.name.includes('DxPool') && !operator.is_private)
-  .reduce((minOperator: any, currentOperator: any) => {
-    return currentOperator.validators_count < minOperator.validators_count ? currentOperator : minOperator;
-  }, operatorList[0]);
+  const defaultOperatorCandidates = operatorList.filter(
+    (operator: any) => operator.name.includes('DxPool') && !operator.is_private && operator.is_active !== 0
+  );
+  const defaultOperator = defaultOperatorCandidates.reduce(
+    (minOperator: any, currentOperator: any) => {
+      return !minOperator || currentOperator.validators_count < minOperator.validators_count
+        ? currentOperator
+        : minOperator;
+    },
+    null
+  );
 
   const [selectedClusterSize, setSelectedClusterSize] = useState(DEFAULT_CLUSTER_SIZE);
-  const [selectedOperators, setSelectedOperators] = useState({ [defaultOperator.id]: defaultOperator });
+  const [selectedOperators, setSelectedOperators] = useState(
+    defaultOperator ? { [defaultOperator.id]: defaultOperator } : {}
+  );
   const [totalFee, setTotalFee] = useState(0);
   const [isMaximumValidator, setIsMaximumValidator] = useState(false);
   const [isUnVerifiedSelected, setIsUnVerifiedSelected] = useState(false);
@@ -57,8 +68,8 @@ const ChooseOperators = () => {
   const [filterValue, setFilterValue] = useState<string[]>([]);
 
   const sortedSelectedOperators = Object.values(selectedOperators).sort((a, b) => {
-    if (a.id === defaultOperator.id) return -1;
-    if (b.id === defaultOperator.id) return 1;
+    if (defaultOperator && a.id === defaultOperator.id) return -1;
+    if (defaultOperator && b.id === defaultOperator.id) return 1;
     return a.id - b.id;
   });
 
@@ -73,16 +84,6 @@ const ChooseOperators = () => {
 
   useEffect(() => {
     const operatorArray = Object.values(selectedOperators);
-    
-    // calculate total fee
-    const total = operatorArray.reduce((accumulator, operator) => {
-      const feeNumber = parseFloat(operator.eth_fee);
-      const ethFee = feeNumber / SSV_EXCHANGE;
-      const ethValue = ethFee === 0 ? 0 : parseFloat(ethFee.toFixed(4));
-      return accumulator + ethValue;
-    }, 0);
-
-    setTotalFee(total);
 
     // Check if any of the selected operators have reached their maximum validator capacity, mainnet is 500 and holesky/hoodi is 560
     const isMaximumValidator = operatorArray.some(operator => operator.validators_count > 500 && networkKey === LowerCaseNetwork.MAINNET || operator.validators_count > 560 && networkKey === LowerCaseNetwork.HOODI);
@@ -92,6 +93,45 @@ const ChooseOperators = () => {
     const isUnVerifiedSelected = operatorArray.some(operator => operator.type != VERIFIED_OPERATOR);
     setIsUnVerifiedSelected(isUnVerifiedSelected);
   }, [selectedOperators]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchTotalFee = async () => {
+      const selectedOperatorIds = Object.keys(selectedOperators).map(Number);
+      const isClusterComplete = selectedOperatorIds.length === selectedClusterSize;
+
+      if (!isClusterComplete || !withdrawalAddress) {
+        setTotalFee(0);
+        return;
+      }
+
+      try {
+        const subtotal = await getOperatorFeeSubtotal({
+          network: network.toLowerCase(),
+          operatorIds: selectedOperatorIds,
+          numValidators: numberOfKeys,
+          address: withdrawalAddress,
+          effectiveBalance: amount,
+        });
+
+        if (mounted) {
+          const fee = Number(subtotal);
+          setTotalFee(Number.isFinite(fee) ? fee : 0);
+        }
+      } catch {
+        if (mounted) {
+          setTotalFee(0);
+        }
+      }
+    };
+
+    fetchTotalFee();
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedOperators, selectedClusterSize, network, withdrawalAddress, amount, numberOfKeys]);
 
   useEffect(() => {
     // ensure the selected operators are updated when the search value changes
@@ -139,21 +179,26 @@ const ChooseOperators = () => {
   */
   const handleClusterSize = (item: ClusterSizeOption) => {
     const operatorIds = Object.keys(selectedOperators).map(Number);
+    const reservedSlots = defaultOperator ? 1 : 0;
 
     // Exclude the default operator from the sorting and slicing
-    const nonDefaultOperatorIds = operatorIds.filter(id => id !== defaultOperator.id);
+    const nonDefaultOperatorIds = defaultOperator
+      ? operatorIds.filter(id => id !== defaultOperator.id)
+      : operatorIds;
 
-    // Slice to keep only up to `item.label - 1` operators (since defaultOperator will always be included)
-    const newSelectedOperatorIds = nonDefaultOperatorIds.slice(0, item.label - 1);
+    // Slice to keep only up to available slots after reserving default operator (if exists)
+    const newSelectedOperatorIds = nonDefaultOperatorIds.slice(0, Math.max(item.label - reservedSlots, 0));
 
-    // Create new selected operators object including the default operator
-    const newSelectedOperators = {
-      [defaultOperator.id]: defaultOperator,
-      ...newSelectedOperatorIds.reduce((acc, id) => {
-        acc[id] = selectedOperators[id];
-        return acc;
-      }, {} as { [key: number]: any }),
-    };
+    // Create new selected operators object including the default operator (if exists)
+    const newSelectedOperators = newSelectedOperatorIds.reduce((acc, id) => {
+      acc[id] = selectedOperators[id];
+      return acc;
+    }, {} as { [key: number]: any });
+
+    if (defaultOperator) {
+      newSelectedOperators[defaultOperator.id] = defaultOperator;
+    }
+
     setSelectedOperators(newSelectedOperators);
 
     setSelectedClusterSize(item.label);
@@ -185,8 +230,10 @@ const ChooseOperators = () => {
     // Create a new object to hold the selected operators, including the default operator
     let newSelectedOperators = {} as any;
 
-    // Always include the default operator
-    newSelectedOperators[defaultOperator.id] = defaultOperator;
+    // Include the default operator if available
+    if (defaultOperator) {
+      newSelectedOperators[defaultOperator.id] = defaultOperator;
+    }
 
     // Add the unique selected operators to the newSelectedOperators object
     uniqueSelectionData.forEach((operator: any) => {
@@ -302,11 +349,11 @@ const ChooseOperators = () => {
                       <div>
                         <MevRelayerTooltipComponent mevRelays={operator.mev_relays} />
                       </div>
-                      {operator.id == defaultOperator.id && (
+                      {defaultOperator && operator.id === defaultOperator.id && (
                         <div className="tw-w-4 tw-items-end tw-mr-1 tw-pb-1"><Lock color="secondary" /></div>
                       )}
                     </div>
-                    {operator.id !== defaultOperator.id && (
+                    {(!defaultOperator || operator.id !== defaultOperator.id) && (
                       <IconButton
                         className="tw-absolute tw-top-[-12px] tw-right-[-12px] tw-bg-gray tw-w-6 tw-h-6 hover:tw-bg-gray"
                         onClick={() => handleRemove(operator.id)}
@@ -326,28 +373,30 @@ const ChooseOperators = () => {
 
           <Divider />
           
-          <div className="tw-flex tw-justify-between tw-items-center tw-text-base tw-mr-4 tw-mt-6">
-            <div className="tw-font-medium tw-flex tw-items-center">
-              <div className="tw-mr-2">Operators Yearly Fee</div>
-              <YearlyFeeTooltip
-                title={
-                  <div className="tw-px-4">
-                    {/* not verified warning */}
-                    {isUnVerifiedSelected && (
-                      <div className="tw-my-4 tw-text-sm">
-                        <div className="tw-font-bold">• You have selected one or more operators that are not verified.</div>
-                        <div className="tw-font-normal">Unverified operators that were not reviewed and their identity is not confirmed, may pose a threat to your validators' performance.</div>
-                        <div className="tw-font-normal">Please proceed only if you know and trust these operators.</div>
-                      </div>
-                    )}
-                  </div>
-                }>
-                <ErrorOutline style={{ color: "#ffd20a", cursor: 'pointer' }} />
-              </YearlyFeeTooltip>
-            </div>
+          {Object.keys(selectedOperators).length === selectedClusterSize && (
+            <div className="tw-flex tw-justify-between tw-items-center tw-text-base tw-mr-4 tw-mt-6">
+              <div className="tw-font-medium tw-flex tw-items-center">
+                <div className="tw-mr-2">Operators Yearly Fee</div>
+                <YearlyFeeTooltip
+                  title={
+                    <div className="tw-px-4">
+                      {/* not verified warning */}
+                      {isUnVerifiedSelected && (
+                        <div className="tw-my-4 tw-text-sm">
+                          <div className="tw-font-bold">• You have selected one or more operators that are not verified.</div>
+                          <div className="tw-font-normal">Unverified operators that were not reviewed and their identity is not confirmed, may pose a threat to your validators' performance.</div>
+                          <div className="tw-font-normal">Please proceed only if you know and trust these operators.</div>
+                        </div>
+                      )}
+                    </div>
+                  }>
+                  <ErrorOutline style={{ color: "#ffd20a", cursor: 'pointer' }} />
+                </YearlyFeeTooltip>
+              </div>
 
-            <div className="tw-font-bold">{totalFee === 0 ? '0' : totalFee.toFixed(4)} ETH</div>
-          </div>
+              <div className="tw-font-bold">{totalFee === 0 ? '0' : totalFee.toFixed(4)} ETH</div>
+            </div>
+          )}
 
           {/* exceeded validator warning */}
           {isMaximumValidator && (

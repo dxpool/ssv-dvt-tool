@@ -115,7 +115,7 @@ app.on("ready", () => {
    * Create the window in which to render the React app
    */
   const window = new BrowserWindow({
-    width: 1280,
+    width: 1550,
     height: 850,
     icon: iconPath,
     title: title,
